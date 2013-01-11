@@ -41,6 +41,18 @@ beforeEach(function () {
         return actualValue === expectedValue;
     }
 
+    function typeOf(actual, type) {
+        return Object.prototype.toString.call(actual) === "[object " + type + "]";
+    }
+
+    function endsWith(haystack, needle) {
+        return haystack.substr(-needle.length) === needle;
+    }
+
+    function startsWith(haystack, needle) {
+        return haystack.substr(0, needle.length) === needle;
+    }
+
     this.addMatchers({
         toBeInvalid: cssMatcher('ng-invalid', 'ng-valid'),
         toBeValid: cssMatcher('ng-valid', 'ng-invalid'),
@@ -159,7 +171,7 @@ beforeEach(function () {
             return this.actual.hasClass ? this.actual.hasClass(clazz) : angular.element(this.actual).hasClass(clazz);
         },
 
-        toHaveCss : function (css) {
+        toHaveCss: function (css) {
             var prop; // css prop
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to have css '" + css + "'.";
@@ -246,21 +258,21 @@ beforeEach(function () {
 
         toBeDisabled: function (selector) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to be disabled '" + angular.mock.dump(selector)  + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be disabled '" + angular.mock.dump(selector) + "'.";
             };
             return this.actual.is(':disabled');
         },
 
         toBeFocused: function (selector) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to be focused '" + angular.mock.dump(selector)  + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be focused '" + angular.mock.dump(selector) + "'.";
             };
             return this.actual.is(':focus');
         },
 
         toHaveText: function (text) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have text '" + text  + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have text '" + text + "'.";
             };
             var trimmedText = $.trim(this.actual.text()), result;
             if (text && $.isFunction(text.test)) {
@@ -273,23 +285,134 @@ beforeEach(function () {
 
         toHaveValue: function (value) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have value '" + value  + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have value '" + value + "'.";
             };
             return this.actual.val() === value;
         },
 
         toHaveData: function (key, expectedValue) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have data '" + expectedValue  + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have data '" + expectedValue + "'.";
             };
             return hasProperty(this.actual.data(key), expectedValue);
         },
 
         toBe: function (selector) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have be '" + angular.mock.dump(selector)  + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have be '" + angular.mock.dump(selector) + "'.";
             };
             return this.actual.is(selector);
+        },
+
+        /**
+         * Does not return true if subject is null
+         * @return {Boolean}
+         */
+        toBeObject: function () {
+            return typeOf(this.actual, 'Object');
+        },
+
+
+        /**
+         * @return {Boolean}
+         */
+        toBeArray: function () {
+            return typeOf(this.actual, 'Array');
+        },
+
+        /**
+         * Asserts subject is an Array with a defined number of members
+         * @param  {Number} size
+         * @return {Boolean}
+         */
+        toBeArrayOfSize: function (size) {
+            return typeOf(this.actual, 'Array') && this.actual.length === size;
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        toBeString: function () {
+            return typeOf(this.actual, 'String');
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        toBeBoolean: function () {
+            return typeOf(this.actual, 'Boolean');
+        },
+
+
+        /**
+         * @return {Boolean}
+         */
+        toBeNonEmptyString: function () {
+            return typeOf(this.actual, 'String') && this.actual.length > 0;
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        toBeNumber: function () {
+            return !isNaN(parseFloat(this.actual)) && !typeOf(this.actual, 'String');
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        toBeFunction: function () {
+            return typeOf(this.actual, 'Function');
+        },
+
+        toHaveLength: function (length) {
+            return this.actual.length === length;
+        },
+
+        /**
+         * Asserts subject throws an Error of any type
+         * @return {Boolean}
+         */
+        toThrowError: function () {
+            var threwError = false;
+            try {
+                this.actual();
+            } catch (e) {
+                threwError = true;
+            }
+            return threwError;
+        },
+
+        /**
+         * Asserts subject throws an Error of a specific type, such as 'TypeError'
+         * @param  {String} type
+         * @return {Boolean}
+         */
+        toThrowErrorOfType: function (type) {
+            var threwErrorOfType = false;
+            try {
+                this.actual();
+            } catch (e) {
+                threwErrorOfType = (e.name === type);
+            }
+            return threwErrorOfType;
+        },
+
+        toStartWith: function (value) {
+            return startsWith(this.actual, value);
+        },
+
+        toEndWith: function (value) {
+            return endsWith(this.actual, value);
+        },
+
+        toContainOnce: function (value) {
+            var actual = this.actual, containsOnce = false, firstFoundAt;
+            if (actual) {
+                firstFoundAt = actual.indexOf(value);
+                containsOnce = firstFoundAt !== -1 && firstFoundAt === actual.lastIndexOf(value);
+            }
+            return containsOnce;
         }
 
     });
