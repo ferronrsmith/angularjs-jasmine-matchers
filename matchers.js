@@ -161,6 +161,9 @@ beforeEach(function () {
 
 
         toBeOneOf: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be one of '" + angular.mock.dump(arguments) + "'.";
+            };
             return indexOf(arguments, this.actual) !== -1;
         },
 
@@ -230,7 +233,7 @@ beforeEach(function () {
 
         toHaveAttr: function (attributeName, expectedAttributeValue) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have attribue '" + expectedAttributeValue + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have attribute '" + expectedAttributeValue + "'.";
             };
             return hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
         },
@@ -251,7 +254,7 @@ beforeEach(function () {
 
         toContain: function (selector) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have attribue '" + angular.mock.dump(selector) + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have contain '" + angular.mock.dump(selector) + "'.";
             };
             return this.actual.find(selector).length;
         },
@@ -299,7 +302,7 @@ beforeEach(function () {
 
         toBe: function (selector) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have be '" + angular.mock.dump(selector) + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be '" + angular.mock.dump(selector) + "'.";
             };
             return this.actual.is(selector);
         },
@@ -309,6 +312,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeObject: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Object]";
+            };
             return typeOf(this.actual, 'Object');
         },
 
@@ -317,6 +323,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeArray: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Array]";
+            };
             return typeOf(this.actual, 'Array');
         },
 
@@ -326,6 +335,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeArrayOfSize: function (size) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Array] of size " + size;
+            };
             return typeOf(this.actual, 'Array') && this.actual.length === size;
         },
 
@@ -333,6 +345,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeString: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be a [String]";
+            };
             return typeOf(this.actual, 'String');
         },
 
@@ -340,6 +355,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeBoolean: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be Boolean";
+            };
             return typeOf(this.actual, 'Boolean');
         },
 
@@ -348,6 +366,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeNonEmptyString: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be a non empty string ";
+            };
             return typeOf(this.actual, 'String') && this.actual.length > 0;
         },
 
@@ -355,6 +376,9 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeNumber: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be a [Number]";
+            };
             return !isNaN(parseFloat(this.actual)) && !typeOf(this.actual, 'String');
         },
 
@@ -362,51 +386,37 @@ beforeEach(function () {
          * @return {Boolean}
          */
         toBeFunction: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be a [Function]";
+            };
             return typeOf(this.actual, 'Function');
         },
 
         toHaveLength: function (length) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have a length of " + length;
+            };
             return this.actual.length === length;
         },
 
-        /**
-         * Asserts subject throws an Error of any type
-         * @return {Boolean}
-         */
-        toThrowError: function () {
-            var threwError = false;
-            try {
-                this.actual();
-            } catch (e) {
-                threwError = true;
-            }
-            return threwError;
-        },
-
-        /**
-         * Asserts subject throws an Error of a specific type, such as 'TypeError'
-         * @param  {String} type
-         * @return {Boolean}
-         */
-        toThrowErrorOfType: function (type) {
-            var threwErrorOfType = false;
-            try {
-                this.actual();
-            } catch (e) {
-                threwErrorOfType = (e.name === type);
-            }
-            return threwErrorOfType;
-        },
-
         toStartWith: function (value) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to start with " + value;
+            };
             return startsWith(this.actual, value);
         },
 
         toEndWith: function (value) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to end with " + value;
+            };
             return endsWith(this.actual, value);
         },
 
         toContainOnce: function (value) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to contain only one " + value;
+            };
             var actual = this.actual, containsOnce = false, firstFoundAt;
             if (actual) {
                 firstFoundAt = actual.indexOf(value);
