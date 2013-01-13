@@ -1,4 +1,5 @@
 /*jslint nomen : true*/
+/*jslint bitwise : true*/
 /*global describe, beforeEach, inject, module, angular, document, it, expect, $, jasmine, toJson */
 beforeEach(function () {
     "use strict";
@@ -53,6 +54,25 @@ beforeEach(function () {
         return haystack.substr(0, needle.length) === needle;
     }
 
+    function objToArray(obj) {
+        var arr = [], prop;
+        for (prop in obj) {
+            // $$hashKey is auto added by angular to all collection
+            if (obj.hasOwnProperty(prop) && prop !== '$$hashKey') {
+                arr.push(obj[prop]);
+            }
+        }
+        return arr;
+    }
+
+    function objListToArray(obj) {
+        var res = [];
+        $.each(obj, function (key, value) {
+            res = res.concat(objToArray(value));
+        });
+        return res;
+    }
+
     this.addMatchers({
         toBeInvalid: cssMatcher('ng-invalid', 'ng-valid'),
         toBeValid: cssMatcher('ng-valid', 'ng-invalid'),
@@ -61,9 +81,11 @@ beforeEach(function () {
 
         toEqual: function (expected) {
             if (this.actual && this.actual.$$log) {
-                this.actual = (typeof expected === 'string')
-                    ? this.actual.toString()
-                    : this.actual.toArray();
+                if (typeof expected === 'string') {
+                    this.actual = this.actual.toString();
+                } else {
+                    this.actual = this.actual.toArray();
+                }
             }
             return jasmine.Matchers.prototype.toEqual.call(this, expected);
         },
@@ -76,11 +98,11 @@ beforeEach(function () {
             this.message = function () {
                 var expected;
                 if (this.actual.message && this.actual.name === 'Error') {
-                    expected = toJson(this.actual.message);
+                    expected = angular.toJson(this.actual.message);
                 } else {
-                    expected = toJson(this.actual);
+                    expected = angular.toJson(this.actual);
                 }
-                return "Expected " + expected + " to be an Error with message " + toJson(message);
+                return "Expected " + expected + " to be an Error with message " + angular.toJson(message);
             };
             return this.actual.name === 'Error' && this.actual.message === message;
         },
@@ -118,7 +140,6 @@ beforeEach(function () {
 
             return this.actual.callCount === 1;
         },
-
 
         toHaveBeenCalledOnceWith: function () {
             var expectedArgs = jasmine.util.argsToArray(arguments);
@@ -159,7 +180,6 @@ beforeEach(function () {
             return this.actual.callCount === 1 && this.env.contains_(this.actual.argsForCall, expectedArgs);
         },
 
-
         toBeOneOf: function () {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be one of '" + angular.mock.dump(arguments) + "'.";
@@ -177,7 +197,7 @@ beforeEach(function () {
         toHaveCss: function (css) {
             var prop; // css prop
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have css '" + css + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have css '" + angular.mock.dump(css) + "'.";
             };
             for (prop in css) {
                 if (css.hasOwnProperty(prop)) {
@@ -423,6 +443,56 @@ beforeEach(function () {
                 containsOnce = firstFoundAt !== -1 && firstFoundAt === actual.lastIndexOf(value);
             }
             return containsOnce;
+        },
+
+        /**
+         * @return {boolean}
+         */
+        ToBeUniqueArray : function () {
+            var arr = this.actual, i, j, len = this.actual.length, o = {};
+            for (i = 0; i < len; i += 1) {
+                for (j += 1; j < len; j += 1) {
+                    if (arr[i] !== arr[j]) {
+                        return false;
+                    }
+                }
+            }
+
+            this.message = function () {
+                return "Array values is not unique";
+            };
+
+            return true;
+        },
+
+        toHaveMatchingAtrr : function (attr, obj) {
+            var arr = objListToArray(obj),
+                attrs = [],
+                result = true,
+                temp = this.actual,
+                iter = 0,
+                len = this.actual.length;
+
+            // can't compare arrays of different lengths
+            if (this.actual.length !== arr.length) {
+                return false;
+            }
+
+            for (iter = 0; iter < len; iter += 1) {
+                result &= temp.eq(iter).attr(attr) === arr[iter];
+            }
+
+            this.message = function () {
+                var message;
+                if (this.actual.length === arr.length) {
+                    message = "Expected '" + angular.mock.dump(this.actual) + "' elements to have attributes " + angular.mock.dump(arr) + " " + angular.mock.dump(arr);
+                } else {
+                    message = "Can't compare obj properties of length " + arr.length + " with element collection of length " + this.actual.length;
+                }
+                return message;
+            };
+
+            return result;
         }
 
     });
