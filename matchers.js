@@ -320,13 +320,6 @@ beforeEach(function () {
             return hasProperty(this.actual.data(key), expectedValue);
         },
 
-        toBe: function (selector) {
-            this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to be '" + angular.mock.dump(selector) + "'.";
-            };
-            return this.actual.is(selector);
-        },
-
         /**
          * Does not return true if subject is null
          * @return {Boolean}
