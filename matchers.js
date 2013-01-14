@@ -253,7 +253,7 @@ beforeEach(function () {
 
         toHaveAttr: function (attributeName, expectedAttributeValue) {
             this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have attribute '" + expectedAttributeValue + "'.";
+                return "Expected '" + angular.mock.dump(this.actual) + "' to have attribute '" + attributeName + "' with value "  + expectedAttributeValue + ".";
             };
             return hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
         },
@@ -497,3 +497,4 @@ beforeEach(function () {
 
     });
 });
+
