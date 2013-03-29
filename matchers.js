@@ -1,3 +1,10 @@
+/**
+ (c) Ferron Hanse 2012
+https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
+Released under the MIT license
+**/
+
+
 /*jslint nomen : true*/
 /*jslint bitwise : true*/
 /*global describe, beforeEach, inject, module, angular, document, it, expect, $, jasmine, toJson */
@@ -209,6 +216,20 @@ beforeEach(function () {
             return true;
         },
 
+        toMatchRegex : function(regex) {
+
+            this.message = function() {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to mactch '" + regex;
+            };
+
+            var reg;
+            if(typeOf(regex, "String")) {
+                reg = new RegExp(regex);
+            } else if (typeOf(regex, "RegExp")) {
+                reg = regex;
+            }
+            return reg.test(this.actual);
+        },
         toBeVisible: function () {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be visible '";
@@ -242,6 +263,13 @@ beforeEach(function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be empty '";
             };
             return this.actual.is(':empty');
+        },
+
+        toBeEmptyString: function() {
+            this.message = function () {
+                return "Expected string '" + angular.mock.dump(this.actual) + "' to be empty '";
+            };
+            return typeOf(this.actual, 'String') && $.trim(this.actual).length == 0;
         },
 
         toExist: function () {
@@ -382,7 +410,7 @@ beforeEach(function () {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be a non empty string ";
             };
-            return typeOf(this.actual, 'String') && this.actual.length > 0;
+            return typeOf(this.actual, 'String') && $.trim(this.actual).length > 0;
         },
 
         /**
