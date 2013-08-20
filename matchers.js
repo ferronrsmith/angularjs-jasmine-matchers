@@ -1,8 +1,8 @@
 /**
  (c) Ferron Hanse 2012
-https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
-Released under the MIT license
-**/
+ https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
+ Released under the MIT license
+ **/
 
 
 /*jslint nomen : true*/
@@ -258,6 +258,20 @@ beforeEach(function () {
             return this.actual.is(':checked');
         },
 
+        toBeSameDate: function(date) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be equal to '" + angular.mock.dump(date);
+            };
+
+            var actualDate = this.actual;
+            return actualDate.getDate() === date.getDate() &&
+                actualDate.getFullYear() === date.getFullYear() &&
+                actualDate.getMonth() === date.getMonth() &&
+                actualDate.getHours() === date.getHours() &&
+                actualDate.getMinutes() === date.getMinutes() &&
+                actualDate.getSeconds() === date.getSeconds();
+        },
+
         toBeEmpty: function () {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be empty '";
@@ -371,10 +385,40 @@ beforeEach(function () {
         },
 
         /**
+         * @return {Boolean}
+         */
+        toBeDate: function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be a [Date]";
+            };
+            return typeOf(this.actual, 'Date');
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        toBeBefore: function (date) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be before" + angular.mock.dump(date);
+            };
+            return typeOf(this.actual, 'Date') && this.actual.getTime() < date.getTime();
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        toBeAfter: function (date) {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be after" + angular.mock.dump(date);
+            };
+            return typeOf(this.actual, 'Date') && this.actual.getTime() > date.getTime();
+        },
+
+        /**
          * Asserts subject is an Array with a defined number of members
          * @param  {Number} size
          * @return {Boolean}
-         */
+         *
         toBeArrayOfSize: function (size) {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Array] of size " + size;
@@ -518,4 +562,3 @@ beforeEach(function () {
 
     });
 });
-
