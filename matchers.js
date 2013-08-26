@@ -216,14 +216,14 @@ beforeEach(function () {
             return true;
         },
 
-        toMatchRegex : function(regex) {
+        toMatchRegex : function (regex) {
 
-            this.message = function() {
+            this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to mactch '" + regex;
             };
 
             var reg;
-            if(typeOf(regex, "String")) {
+            if (typeOf(regex, "String")) {
                 reg = new RegExp(regex);
             } else if (typeOf(regex, "RegExp")) {
                 reg = regex;
@@ -258,7 +258,7 @@ beforeEach(function () {
             return this.actual.is(':checked');
         },
 
-        toBeSameDate: function(date) {
+        toBeSameDate: function (date) {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be equal to '" + angular.mock.dump(date);
             };
@@ -279,11 +279,11 @@ beforeEach(function () {
             return this.actual.is(':empty');
         },
 
-        toBeEmptyString: function() {
+        toBeEmptyString: function () {
             this.message = function () {
                 return "Expected string '" + angular.mock.dump(this.actual) + "' to be empty '";
             };
-            return typeOf(this.actual, 'String') && $.trim(this.actual).length == 0;
+            return typeOf(this.actual, 'String') && $.trim(this.actual).length === 0;
         },
 
         toExist: function () {
@@ -418,7 +418,7 @@ beforeEach(function () {
          * Asserts subject is an Array with a defined number of members
          * @param  {Number} size
          * @return {Boolean}
-         *
+         */
         toBeArrayOfSize: function (size) {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Array] of size " + size;
@@ -465,6 +465,13 @@ beforeEach(function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be a [Number]";
             };
             return !isNaN(parseFloat(this.actual)) && !typeOf(this.actual, 'String');
+        },
+        
+        toBeNaN : function () {
+            this.message = function () {
+                return "Expected '" + angular.mock.dump(this.actual) + "' to be a [NaN]";
+            };
+            return isNaN(this.actual);
         },
 
         /**
