@@ -80,6 +80,18 @@ beforeEach(function () {
         return res;
     }
 
+    // a check that allows the matchers to work with angular-scenario
+    // NB: Not all matchers work with angualar-scenario and i have not done extensive testing on this
+    if(this.addMatchers === undefined) {
+        this.addMatchers = function(properties) {
+            if (angular.scenario.matcher !== undefined && angular.isObject(properties)) {
+                angular.forEach(properties, function (value, key) {
+                    angular.scenario.matcher(key, value);
+                });
+            }
+        }
+    }
+
     this.addMatchers({
         toBeInvalid: cssMatcher('ng-invalid', 'ng-valid'),
         toBeValid: cssMatcher('ng-valid', 'ng-invalid'),
