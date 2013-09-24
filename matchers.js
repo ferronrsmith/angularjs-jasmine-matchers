@@ -314,13 +314,6 @@ beforeEach(function () {
             return this.actual.attr('id') === id;
         },
 
-        toContain: function (selector) {
-            this.message = function () {
-                return "Expected '" + angular.mock.dump(this.actual) + "' to have contain '" + angular.mock.dump(selector) + "'.";
-            };
-            return this.actual.find(selector).length;
-        },
-
         toBeDisabled: function (selector) {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be disabled '" + angular.mock.dump(selector) + "'.";
