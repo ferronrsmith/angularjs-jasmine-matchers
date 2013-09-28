@@ -1,0 +1,14 @@
+{
+  "name": "angular-jasmine-matchers",
+  "description": "Matchers for Jasmine Testing in AngularJS",
+  "author": "A confused individual <ferronrsmith@gmail.com>",
+  "engine": "node >= 0.10.0",
+  "devDependencies": {
+    "grunt-cli": "~0.1.9",
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-karma": "~0.6.1",
+    "karma": "~0.10.2",
+    "grunt-jslint": "~1.1.1"
+  }
+}

@@ -6,6 +6,8 @@
 
 
 /*jslint nomen : true*/
+/*jslint devel : true*/
+/*jslint unparam : true */
 /*jslint bitwise : true*/
 /*global describe, beforeEach, inject, module, angular, document, it, expect, $, jasmine, toJson */
 beforeEach(function () {
@@ -82,14 +84,14 @@ beforeEach(function () {
 
     // a check that allows the matchers to work with angular-scenario
     // NB: Not all matchers work with angualar-scenario and i have not done extensive testing on this
-    if(this.addMatchers === undefined) {
-        this.addMatchers = function(properties) {
+    if (this.addMatchers === undefined) {
+        this.addMatchers = function (properties) {
             if (angular.scenario.matcher !== undefined && angular.isObject(properties)) {
                 angular.forEach(properties, function (value, key) {
                     angular.scenario.matcher(key, value);
                 });
             }
-        }
+        };
     }
 
     this.addMatchers({
@@ -471,7 +473,7 @@ beforeEach(function () {
             };
             return !isNaN(parseFloat(this.actual)) && !typeOf(this.actual, 'String');
         },
-        
+
         toBeNaN : function () {
             this.message = function () {
                 return "Expected '" + angular.mock.dump(this.actual) + "' to be a [NaN]";
@@ -526,17 +528,18 @@ beforeEach(function () {
          * @return {boolean}
          */
         ToBeUniqueArray : function () {
-            var arr = this.actual, i, j, len = this.actual.length, o = {};
+            //indexOf
+            var arr = this.actual, i, len = this.actual.length, o = [];
             for (i = 0; i < len; i += 1) {
-                for (j += 1; j < len; j += 1) {
-                    if (arr[i] !== arr[j]) {
-                        return false;
-                    }
+                if (indexOf(o, arr[i]) === -1) {
+                    o.push(arr[i]);
+                } else {
+                    return false;
                 }
             }
 
             this.message = function () {
-                return "Array values is not unique";
+                return "Expected " + angular.mock.dump(this.actual) + " values is not unique";
             };
 
             return true;
@@ -544,7 +547,6 @@ beforeEach(function () {
 
         toHaveMatchingAtrr : function (attr, obj) {
             var arr = objListToArray(obj),
-                attrs = [],
                 result = true,
                 temp = this.actual,
                 iter = 0,
