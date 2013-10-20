@@ -37,7 +37,7 @@ beforeEach(function () {
             });
 
             self.message = function () {
-                return "Expected to have " + presentClasses +
+                return "Expected to {0} have ".t(this.isNot ? "not" : "") + presentClasses +
                     (absentClasses ? (" and not have " + absentClasses + " ") : "") +
                     " but had " + element[0].className + ".";
             };
@@ -205,6 +205,9 @@ beforeEach(function () {
     };
 
     matchers.toEqualData = function (expected) {
+        this.message = function () {
+            return "Expected " + angular.mock.dump(this.actual) + " data {0} to Equal ".t(this.isNot ? "not" : "") + expected;
+        };
         return angular.equals(this.actual, expected);
     };
 
@@ -216,7 +219,7 @@ beforeEach(function () {
             } else {
                 expected = angular.toJson(this.actual);
             }
-            return "Expected " + expected + " to be an Error with message " + angular.toJson(message);
+            return "Expected " + expected + " to {0} be an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(message);
         };
         return this.actual.name === 'Error' && this.actual.message === message;
     };
@@ -229,7 +232,7 @@ beforeEach(function () {
             } else {
                 expected = angular.toJson(this.actual);
             }
-            return "Expected " + expected + " to match an Error with message " + angular.toJson(messageRegexp);
+            return "Expected " + expected + " to {0} match an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(messageRegexp);
         };
         return this.actual.name === 'Error' && messageRegexp.test(this.actual.message);
     };
@@ -296,14 +299,14 @@ beforeEach(function () {
 
     matchers.toBeOneOf = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be one of '" + angular.mock.dump(arguments) + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be one of '".t(this.isNot ? "not" : "") + angular.mock.dump(arguments) + "'.";
         };
         return hlp.indexOf(arguments, this.actual) !== -1;
     };
 
     matchers.toHaveClass = function (clazz) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have class '" + clazz + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have class '".t(this.isNot ? "not" : "") + clazz + "'.";
         };
         return this.actual.hasClass ? this.actual.hasClass(clazz) : angular.element(this.actual).hasClass(clazz);
     };
@@ -311,7 +314,7 @@ beforeEach(function () {
     matchers.toHaveCss = function (css) {
         var prop; // css prop
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have css '" + angular.mock.dump(css) + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have css '".t(this.isNot ? "not" : "") + angular.mock.dump(css) + "'.";
         };
         for (prop in css) {
             if (css.hasOwnProperty(prop)) {
@@ -326,7 +329,7 @@ beforeEach(function () {
     matchers.toMatchRegex = function (regex) {
 
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to mactch '" + regex;
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} match '".t(this.isNot ? "not" : "") + regex;
         };
 
         var reg;
@@ -340,35 +343,35 @@ beforeEach(function () {
 
     matchers.toBeVisible = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be visible '";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be visible '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':visible');
     };
 
     matchers.toBeHidden = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be hidden '";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be hidden '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':hidden');
     };
 
     matchers.toBeSelected = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be selected '";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be selected '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':selected');
     };
 
     matchers.toBeChecked = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be checked '";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be checked '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':checked');
     };
 
     matchers.toBeSameDate = function (date) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be equal to '" + angular.mock.dump(date);
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be equal to '".t(this.isNot ? "not" : "") + angular.mock.dump(date);
         };
 
         var actualDate = this.actual;
@@ -382,14 +385,14 @@ beforeEach(function () {
 
     matchers.toBeEmpty = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be empty '";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':empty');
     };
 
     matchers.toBeEmptyString = function () {
         this.message = function () {
-            return "Expected string '" + angular.mock.dump(this.actual) + "' to be empty '";
+            return "Expected string '" + angular.mock.dump(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'String') && $.trim(this.actual).length === 0;
     };
@@ -398,7 +401,7 @@ beforeEach(function () {
         this.message = function () {
             var msg = "";
             if (bjQuery) {
-                msg = "Expected '" + angular.mock.dump(this.actual) + "' to be exists '";
+                msg = "Expected '" + angular.mock.dump(this.actual) + "' to {0} exists '".t(this.isNot ? "not" : "");
             } else {
                 msg = hlp.msg.jQuery;
             }
@@ -409,35 +412,35 @@ beforeEach(function () {
 
     matchers.toHaveAttr = function (attributeName, expectedAttributeValue) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have attribute '" + attributeName + "' with value "  + expectedAttributeValue + ".";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have attribute '".t(this.isNot ? "not" : "") + attributeName + "' with value "  + expectedAttributeValue + ".";
         };
         return hlp.hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
     };
 
     matchers.toHaveProp = function (propertyName, expectedPropertyValue) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have property '" + expectedPropertyValue + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have property '".t(this.isNot ? "not" : "") + expectedPropertyValue + "'.";
         };
         return hlp.hasProperty(this.actual.prop(propertyName), expectedPropertyValue);
     };
 
     matchers.toHaveId = function (id) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have id '" + id + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have id '".t(this.isNot ? "not" : "") + id + "'.";
         };
         return this.actual.attr('id') === id;
     };
 
     matchers.toBeDisabled = function (selector) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be disabled '" + angular.mock.dump(selector) + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be disabled '".t(this.isNot ? "not" : "") + angular.mock.dump(selector) + "'.";
         };
         return this.actual.is(':disabled');
     };
 
     matchers.toBeFocused = function (selector) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be focused '" + angular.mock.dump(selector) + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be focused '".t(this.isNot ? "not" : "") + angular.mock.dump(selector) + "'.";
         };
         return this.actual.is(':focus');
     };
@@ -450,7 +453,7 @@ beforeEach(function () {
         this.message = function () {
             var msg = "";
             if (bjQuery) {
-                msg = "Expected '" + angular.mock.dump(this.actual) + "' to have text '" + text + "'.";
+                msg = "Expected '" + angular.mock.dump(this.actual) + "' to {0} have text '".t(this.isNot ? "not" : "") + text + "'.";
             } else {
                 msg = hlp.msg.jQuery;
             }
@@ -468,14 +471,14 @@ beforeEach(function () {
 
     matchers.toHaveValue = function (value) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have value '" + value + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have value '".t(this.isNot ? "not" : "") + value + "'.";
         };
         return this.actual.val() === value;
     };
 
     matchers.toHaveData = function (key, expectedValue) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have data '" + expectedValue + "'.";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} have data '" + expectedValue + "'.".t(this.isNot ? "not" : "");
         };
         return hlp.hasProperty(this.actual.data(key), expectedValue);
     };
@@ -486,7 +489,7 @@ beforeEach(function () {
      */
     matchers.toBeObject = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Object]";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be an [Object]".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'Object');
     };
@@ -497,7 +500,7 @@ beforeEach(function () {
      */
     matchers.toBeArray = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Array]";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be an [Array]".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'Array');
     };
@@ -507,7 +510,7 @@ beforeEach(function () {
      */
     matchers.toBeDate = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be a [Date]";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be a [Date]".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'Date');
     };
@@ -517,7 +520,7 @@ beforeEach(function () {
      */
     matchers.toBeBefore = function (date) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be before" + angular.mock.dump(date);
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be before".t(this.isNot ? "not" : "") + angular.mock.dump(date);
         };
         return hlp.typeOf(this.actual, 'Date') && this.actual.getTime() < date.getTime();
     };
@@ -527,14 +530,14 @@ beforeEach(function () {
      */
     matchers.toBeAfter = function (date) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be after" + angular.mock.dump(date);
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be after".t(this.isNot ? "not" : "") + angular.mock.dump(date);
         };
         return hlp.typeOf(this.actual, 'Date') && this.actual.getTime() > date.getTime();
     };
 
     matchers.toBeIso8601Date = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be ISO8601 Date Format";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be ISO8601 Date Format".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'String')
             && this.actual.length >= 10
@@ -549,7 +552,7 @@ beforeEach(function () {
      */
     matchers.toBeArrayOfSize = function (size) {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be an [Array] of size " + size;
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be an [Array] of size {1}".t(this.isNot ? "not" : "", size);
         };
         return hlp.typeOf(this.actual, 'Array') && this.actual.length === size;
     };
@@ -559,7 +562,7 @@ beforeEach(function () {
      */
     matchers.toBeString = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be a [String]";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be a [String]".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'String');
     };
@@ -569,7 +572,7 @@ beforeEach(function () {
      */
     matchers.toBeBoolean = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be Boolean";
+            return "Expected '" + angular.mock.dump(this.actual) + "' to {0} be Boolean".t(this.isNot ? "not" : "");
         };
         return hlp.typeOf(this.actual, 'Boolean');
     };

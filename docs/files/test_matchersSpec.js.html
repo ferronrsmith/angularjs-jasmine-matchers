@@ -123,6 +123,10 @@ describe(&#x27;Testing Custom Matchers&#x27;, function () {
         );
     });
 
+    it(&#x27;Expect not to work properly&#x27;, function () {
+        expect({}).toBeObject();
+    });
+
     it(&#x27;Expected Dates to match&#x27;, function () {
         var date = new Date();
         expect(date).toMatchDatePart(date, &#x27;day&#x27;);

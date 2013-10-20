@@ -35,6 +35,10 @@ describe('Testing Custom Matchers', function () {
         );
     });
 
+    it('Expect not to work properly', function () {
+        expect({}).toBeObject();
+    });
+
     it('Expected Dates to match', function () {
         var date = new Date();
         expect(date).toMatchDatePart(date, 'day');

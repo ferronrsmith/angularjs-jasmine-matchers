@@ -125,7 +125,7 @@ beforeEach(function () {
             });
 
             self.message = function () {
-                return &quot;Expected to have &quot; + presentClasses +
+                return &quot;Expected to {0} have &quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + presentClasses +
                     (absentClasses ? (&quot; and not have &quot; + absentClasses + &quot; &quot;) : &quot;&quot;) +
                     &quot; but had &quot; + element[0].className + &quot;.&quot;;
             };
@@ -293,6 +293,9 @@ beforeEach(function () {
     };
 
     matchers.toEqualData = function (expected) {
+        this.message = function () {
+            return &quot;Expected &quot; + angular.mock.dump(this.actual) + &quot; data {0} to Equal &quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + expected;
+        };
         return angular.equals(this.actual, expected);
     };
 
@@ -304,7 +307,7 @@ beforeEach(function () {
             } else {
                 expected = angular.toJson(this.actual);
             }
-            return &quot;Expected &quot; + expected + &quot; to be an Error with message &quot; + angular.toJson(message);
+            return &quot;Expected &quot; + expected + &quot; to {0} be an Error with message &quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.toJson(message);
         };
         return this.actual.name === &#x27;Error&#x27; &amp;&amp; this.actual.message === message;
     };
@@ -317,7 +320,7 @@ beforeEach(function () {
             } else {
                 expected = angular.toJson(this.actual);
             }
-            return &quot;Expected &quot; + expected + &quot; to match an Error with message &quot; + angular.toJson(messageRegexp);
+            return &quot;Expected &quot; + expected + &quot; to {0} match an Error with message &quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.toJson(messageRegexp);
         };
         return this.actual.name === &#x27;Error&#x27; &amp;&amp; messageRegexp.test(this.actual.message);
     };
@@ -384,14 +387,14 @@ beforeEach(function () {
 
     matchers.toBeOneOf = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be one of &#x27;&quot; + angular.mock.dump(arguments) + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be one of &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(arguments) + &quot;&#x27;.&quot;;
         };
         return hlp.indexOf(arguments, this.actual) !== -1;
     };
 
     matchers.toHaveClass = function (clazz) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have class &#x27;&quot; + clazz + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have class &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + clazz + &quot;&#x27;.&quot;;
         };
         return this.actual.hasClass ? this.actual.hasClass(clazz) : angular.element(this.actual).hasClass(clazz);
     };
@@ -399,7 +402,7 @@ beforeEach(function () {
     matchers.toHaveCss = function (css) {
         var prop; // css prop
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have css &#x27;&quot; + angular.mock.dump(css) + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have css &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(css) + &quot;&#x27;.&quot;;
         };
         for (prop in css) {
             if (css.hasOwnProperty(prop)) {
@@ -414,7 +417,7 @@ beforeEach(function () {
     matchers.toMatchRegex = function (regex) {
 
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to mactch &#x27;&quot; + regex;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} match &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + regex;
         };
 
         var reg;
@@ -428,35 +431,35 @@ beforeEach(function () {
 
     matchers.toBeVisible = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be visible &#x27;&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be visible &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return this.actual.is(&#x27;:visible&#x27;);
     };
 
     matchers.toBeHidden = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be hidden &#x27;&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be hidden &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return this.actual.is(&#x27;:hidden&#x27;);
     };
 
     matchers.toBeSelected = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be selected &#x27;&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be selected &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return this.actual.is(&#x27;:selected&#x27;);
     };
 
     matchers.toBeChecked = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be checked &#x27;&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be checked &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return this.actual.is(&#x27;:checked&#x27;);
     };
 
     matchers.toBeSameDate = function (date) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be equal to &#x27;&quot; + angular.mock.dump(date);
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be equal to &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(date);
         };
 
         var actualDate = this.actual;
@@ -470,14 +473,14 @@ beforeEach(function () {
 
     matchers.toBeEmpty = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be empty &#x27;&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be empty &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return this.actual.is(&#x27;:empty&#x27;);
     };
 
     matchers.toBeEmptyString = function () {
         this.message = function () {
-            return &quot;Expected string &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be empty &#x27;&quot;;
+            return &quot;Expected string &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be empty &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;String&#x27;) &amp;&amp; $.trim(this.actual).length === 0;
     };
@@ -486,7 +489,7 @@ beforeEach(function () {
         this.message = function () {
             var msg = &quot;&quot;;
             if (bjQuery) {
-                msg = &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be exists &#x27;&quot;;
+                msg = &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} exists &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
             } else {
                 msg = hlp.msg.jQuery;
             }
@@ -497,35 +500,35 @@ beforeEach(function () {
 
     matchers.toHaveAttr = function (attributeName, expectedAttributeValue) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have attribute &#x27;&quot; + attributeName + &quot;&#x27; with value &quot;  + expectedAttributeValue + &quot;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have attribute &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + attributeName + &quot;&#x27; with value &quot;  + expectedAttributeValue + &quot;.&quot;;
         };
         return hlp.hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
     };
 
     matchers.toHaveProp = function (propertyName, expectedPropertyValue) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have property &#x27;&quot; + expectedPropertyValue + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have property &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + expectedPropertyValue + &quot;&#x27;.&quot;;
         };
         return hlp.hasProperty(this.actual.prop(propertyName), expectedPropertyValue);
     };
 
     matchers.toHaveId = function (id) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have id &#x27;&quot; + id + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have id &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + id + &quot;&#x27;.&quot;;
         };
         return this.actual.attr(&#x27;id&#x27;) === id;
     };
 
     matchers.toBeDisabled = function (selector) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be disabled &#x27;&quot; + angular.mock.dump(selector) + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be disabled &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(selector) + &quot;&#x27;.&quot;;
         };
         return this.actual.is(&#x27;:disabled&#x27;);
     };
 
     matchers.toBeFocused = function (selector) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be focused &#x27;&quot; + angular.mock.dump(selector) + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be focused &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(selector) + &quot;&#x27;.&quot;;
         };
         return this.actual.is(&#x27;:focus&#x27;);
     };
@@ -538,7 +541,7 @@ beforeEach(function () {
         this.message = function () {
             var msg = &quot;&quot;;
             if (bjQuery) {
-                msg = &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have text &#x27;&quot; + text + &quot;&#x27;.&quot;;
+                msg = &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have text &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + text + &quot;&#x27;.&quot;;
             } else {
                 msg = hlp.msg.jQuery;
             }
@@ -556,14 +559,14 @@ beforeEach(function () {
 
     matchers.toHaveValue = function (value) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have value &#x27;&quot; + value + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have value &#x27;&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + value + &quot;&#x27;.&quot;;
         };
         return this.actual.val() === value;
     };
 
     matchers.toHaveData = function (key, expectedValue) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to have data &#x27;&quot; + expectedValue + &quot;&#x27;.&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} have data &#x27;&quot; + expectedValue + &quot;&#x27;.&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.hasProperty(this.actual.data(key), expectedValue);
     };
@@ -574,7 +577,7 @@ beforeEach(function () {
      */
     matchers.toBeObject = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be an [Object]&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be an [Object]&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;Object&#x27;);
     };
@@ -585,7 +588,7 @@ beforeEach(function () {
      */
     matchers.toBeArray = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be an [Array]&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be an [Array]&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;Array&#x27;);
     };
@@ -595,7 +598,7 @@ beforeEach(function () {
      */
     matchers.toBeDate = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be a [Date]&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be a [Date]&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;Date&#x27;);
     };
@@ -605,7 +608,7 @@ beforeEach(function () {
      */
     matchers.toBeBefore = function (date) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be before&quot; + angular.mock.dump(date);
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be before&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(date);
         };
         return hlp.typeOf(this.actual, &#x27;Date&#x27;) &amp;&amp; this.actual.getTime() &lt; date.getTime();
     };
@@ -615,14 +618,14 @@ beforeEach(function () {
      */
     matchers.toBeAfter = function (date) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be after&quot; + angular.mock.dump(date);
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be after&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;) + angular.mock.dump(date);
         };
         return hlp.typeOf(this.actual, &#x27;Date&#x27;) &amp;&amp; this.actual.getTime() &gt; date.getTime();
     };
 
     matchers.toBeIso8601Date = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be ISO8601 Date Format&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be ISO8601 Date Format&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;String&#x27;)
             &amp;&amp; this.actual.length &gt;= 10
@@ -637,7 +640,7 @@ beforeEach(function () {
      */
     matchers.toBeArrayOfSize = function (size) {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be an [Array] of size &quot; + size;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be an [Array] of size {1}&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;, size);
         };
         return hlp.typeOf(this.actual, &#x27;Array&#x27;) &amp;&amp; this.actual.length === size;
     };
@@ -647,7 +650,7 @@ beforeEach(function () {
      */
     matchers.toBeString = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be a [String]&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be a [String]&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;String&#x27;);
     };
@@ -657,7 +660,7 @@ beforeEach(function () {
      */
     matchers.toBeBoolean = function () {
         this.message = function () {
-            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to be Boolean&quot;;
+            return &quot;Expected &#x27;&quot; + angular.mock.dump(this.actual) + &quot;&#x27; to {0} be Boolean&quot;.t(this.isNot ? &quot;not&quot; : &quot;&quot;);
         };
         return hlp.typeOf(this.actual, &#x27;Boolean&#x27;);
     };

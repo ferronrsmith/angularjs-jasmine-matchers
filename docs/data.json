@@ -213,7 +213,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 483,
+            "line": 486,
             "description": "Does not return true if subject is null",
             "return": {
                 "description": "",
@@ -223,7 +223,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 495,
+            "line": 498,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -232,7 +232,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 505,
+            "line": 508,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -241,7 +241,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 515,
+            "line": 518,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -250,7 +250,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 525,
+            "line": 528,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -259,7 +259,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 545,
+            "line": 548,
             "description": "Asserts subject is an Array with a defined number of members",
             "params": [
                 {
@@ -276,7 +276,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 557,
+            "line": 560,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -285,7 +285,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 567,
+            "line": 570,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -294,7 +294,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 578,
+            "line": 581,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -303,7 +303,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 598,
+            "line": 601,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -312,7 +312,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 629,
+            "line": 632,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -321,7 +321,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 679,
+            "line": 682,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -330,7 +330,7 @@
         },
         {
             "file": "dist/matchers.js",
-            "line": 729,
+            "line": 732,
             "itemtype": "method",
             "name": "matchers.toMatchDatePart",
             "params": [
@@ -366,51 +366,51 @@
         },
         {
             "message": "Missing item type\nDoes not return true if subject is null",
-            "line": " dist/matchers.js:483"
+            "line": " dist/matchers.js:486"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:495"
+            "line": " dist/matchers.js:498"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:505"
+            "line": " dist/matchers.js:508"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:515"
+            "line": " dist/matchers.js:518"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:525"
+            "line": " dist/matchers.js:528"
         },
         {
             "message": "Missing item type\nAsserts subject is an Array with a defined number of members",
-            "line": " dist/matchers.js:545"
+            "line": " dist/matchers.js:548"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:557"
+            "line": " dist/matchers.js:560"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:567"
+            "line": " dist/matchers.js:570"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:578"
+            "line": " dist/matchers.js:581"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:598"
+            "line": " dist/matchers.js:601"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:629"
+            "line": " dist/matchers.js:632"
         },
         {
             "message": "Missing item type",
-            "line": " dist/matchers.js:679"
+            "line": " dist/matchers.js:682"
         },
         {
             "message": "Missing item type\nCreated by ferron on 9/28/13.",
