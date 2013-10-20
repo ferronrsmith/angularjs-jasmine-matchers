@@ -91,4 +91,4 @@ If you can, have another developer sanity check your change
 
 
 ### Build status
--[![Build Status](https://travis-ci.org/ferronrsmith/angularjs-jasmine-matchers.png?branch=master)](https://travis-ci.org/ferronrsmith/angularjs-jasmine-matchers)
+[![Build Status](https://travis-ci.org/ferronrsmith/angularjs-jasmine-matchers.png?branch=master)](https://travis-ci.org/ferronrsmith/angularjs-jasmine-matchers)
