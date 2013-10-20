@@ -1,4 +1,5 @@
 lib/external
+doc
 .idea
 
 # node js ignore files
