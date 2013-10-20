@@ -1,19 +1,27 @@
-/**
+/*
  (c) Ferron Hanse 2012
  https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
  Released under the MIT license
- **/
+*/
 
 
 /*jslint nomen : true*/
 /*jslint devel : true*/
 /*jslint unparam : true */
+/*jslint browser : true */
 /*jslint bitwise : true*/
 /*global describe, beforeEach, inject, module, angular, document, it, expect, $, jasmine, toJson */
+
+/**
+ Provides a comprehensive set of custom matchers for the Jasmine testing framework
+ @class matchers
+ @main matchers
+ **/
 beforeEach(function () {
     "use strict";
     var matchers = {},
-        hlp = {};
+        hlp = {},
+        bjQuery = false;
 
     hlp.cssMatcher = function (presentClasses, absentClasses) {
         var self = this;
@@ -37,6 +45,13 @@ beforeEach(function () {
         };
     };
 
+    /**
+     * Returns the index of an object in a given array
+     * @method hpl.indexOf
+     * @param array :- array object to be checked
+     * @param obj :- object (value) to be checked for in the array
+     * @return {number} index of the obj in the array
+     */
     hlp.indexOf = function (array, obj) {
         var i;
         for (i = 0; i < array.length; i += 1) {
@@ -47,6 +62,13 @@ beforeEach(function () {
         return -1;
     };
 
+    /**
+     * Check if an object has a particular property matches the expected value
+     * @method hpl.hasProperty
+     * @param actualValue property value
+     * @param expectedValue expected value
+     * @return {boolean} boolean indicating if the values match
+     */
     hlp.hasProperty = function (actualValue, expectedValue) {
         if (expectedValue === undefined) {
             return actualValue !== undefined;
@@ -54,32 +76,64 @@ beforeEach(function () {
         return actualValue === expectedValue;
     };
 
+    /**
+     * Checks if a given element/JavaScript object matches the type
+     * @method hpl.typeOf
+     * @param actual Object to be checked for type comparison
+     * @param type type to be matched
+     * @return {boolean} boolean indicating if the type matches the object type
+     */
     hlp.typeOf = function (actual, type) {
         return Object.prototype.toString.call(actual) === "[object " + type + "]";
     };
 
+    /**
+     * Checks if the a given word/phrase/substring is at the end of a string
+     * @method hpl.endsWith
+     * @param {String} haystack string to be search
+     * @param needle {String} word/phrase/substring
+     * @return {boolean} boolean indicating if the word/phrase/substring was found at the end of the string
+     */
     hlp.endsWith = function (haystack, needle) {
         return haystack.substr(-needle.length) === needle;
     };
 
+    /**
+     * Checks if the a given word/phrase/substring is at the beginning of a string
+     * @method hpl.endsWith
+     * @param {String} haystack string to be search
+     * @param needle {String} word/phrase/substring
+     * @return {boolean} boolean indicating if the word/phrase/substring was found at the beginning of the string
+     */
     hlp.startsWith = function (haystack, needle) {
         return haystack.substr(0, needle.length) === needle;
     };
 
+    /**
+     * Coverts a given object literal to an array
+     * @method hlp.objToArray
+     * @param obj - object literal
+     * @return {Array} array representation of the object
+     * @since 0.2 :- Removed $$hashKey check
+     */
     hlp.objToArray = function (obj) {
-        var arr = [], prop;
-        for (prop in obj) {
-            // $$hashKey is auto added by angular to all collection
-            if (obj.hasOwnProperty(prop) && prop !== '$$hashKey') {
-                arr.push(obj[prop]);
-            }
-        }
+        var arr = [], aDup = {};
+        angular.copy(obj, aDup);
+        angular.forEach(aDup, function (value, key) {
+            arr.push(value);
+        });
         return arr;
     };
 
+    /**
+     * Coverts a given a list of object literals to a flatten array
+     * @method hlp.objListToArray
+     * @param obj - object literals
+     * @return {Array} flatten array representation of the objects
+     */
     hlp.objListToArray = function (obj) {
         var res = [];
-        $.each(obj, function (key, value) {
+        angular.forEach(obj, function (value, key) {
             res = res.concat(hlp.objToArray(value));
         });
         return res;
@@ -88,6 +142,40 @@ beforeEach(function () {
     hlp.isNumber = function (val) {
         return !isNaN(parseFloat(val)) && !hlp.typeOf(val, 'String');
     };
+
+    /**
+     * Message constant for jQuery
+     * @type {string}
+     */
+    hlp.msg = {
+        jQuery : "Error: jQuery not found. this matcher has a dependency on jQuery",
+        date : {
+            invalidType : 'Expected {0} & {1} to be a Date',
+            nomatch : {
+                Date : 'Expected {0} & {1} to match',
+                part : "Invalid part : {0} entered"
+            }
+        }
+    };
+
+    hlp.dp = function () {
+        angular.mock.dump(arguments);
+    };
+
+    String.prototype.t = function () {
+        var args = arguments;
+        return this.replace(/\{(\d+)\}/g, function (match, number) {
+            return args[number] !== 'undefined' ? args[number] : match;
+        });
+    };
+
+    /**
+     * Check if jQuery is present
+     * @return {boolean} boolean indicating if jQuery is present
+     */
+    bjQuery = (function () {
+        return (window.$ !== undefined || window.jQuery !== undefined);
+    }());
 
     // a check that allows the matchers to work with angular-scenario
     // NB: Not all matchers work with angualar-scenario and i have not done extensive testing on this
@@ -308,9 +396,15 @@ beforeEach(function () {
 
     matchers.toExist = function () {
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be exists '";
+            var msg = "";
+            if (bjQuery) {
+                msg = "Expected '" + angular.mock.dump(this.actual) + "' to be exists '";
+            } else {
+                msg = hlp.msg.jQuery;
+            }
+            return msg;
         };
-        return $(document).find(this.actual).length;
+        return bjQuery ? $(document).find(this.actual).length : false;
     };
 
     matchers.toHaveAttr = function (attributeName, expectedAttributeValue) {
@@ -349,9 +443,20 @@ beforeEach(function () {
     };
 
     matchers.toHaveText = function (text) {
+        if (!bjQuery) {
+            return false;
+        }
+
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to have text '" + text + "'.";
+            var msg = "";
+            if (bjQuery) {
+                msg = "Expected '" + angular.mock.dump(this.actual) + "' to have text '" + text + "'.";
+            } else {
+                msg = hlp.msg.jQuery;
+            }
+            return msg;
         };
+
         var trimmedText = $.trim(this.actual.text()), result;
         if (text && angular.isFunction(text.test)) {
             result = text.test(trimmedText);
@@ -474,8 +579,18 @@ beforeEach(function () {
      * @return {Boolean}
      */
     matchers.toBeNonEmptyString = function () {
+        if (!bjQuery) {
+            return false;
+        }
+
         this.message = function () {
-            return "Expected '" + angular.mock.dump(this.actual) + "' to be a non empty string ";
+            var msg = "";
+            if (bjQuery) {
+                msg = "Expected '" + angular.mock.dump(this.actual) + "' to be a non empty string ";
+            } else {
+                msg = hlp.msg.jQuery;
+            }
+            return msg;
         };
         return hlp.typeOf(this.actual, 'String') && $.trim(this.actual).length > 0;
     };
@@ -554,11 +669,18 @@ beforeEach(function () {
         return containsOnce;
     };
 
+    matchers.toContainSelector = function (selector) {
+        this.message = function () {
+            return "Expected '" + angular.mock.dump(this.actual) + "' to have contain '" + angular.mock.dump(selector) + "'.";
+        };
+        return this.actual.find(selector).length;
+    };
+
     /**
      * @return {boolean}
      */
-    matchers.ToBeUniqueArray = function () {
-        //indexOf
+    matchers.toBeUniqueArray = function () {
+        // iterate over the array, adding unique elements to o
         var arr = this.actual, i, len = this.actual.length, o = [];
         for (i = 0; i < len; i += 1) {
             if (hlp.indexOf(o, arr[i]) === -1) {
@@ -601,6 +723,81 @@ beforeEach(function () {
             return message;
         };
 
+        return result;
+    };
+
+    /**
+     *
+     * @method matchers.toMatchDatePart
+     * @param oDate {Date} Date to be compared
+     * @param {String} part specific part/property of the date you want to be compared </br
+     *        <br />
+     *        <b>Currently supported parts are listed below :</b>
+     *        <ul>
+     *            <li>date</li>
+     *            <li>day</li>
+     *            <li>month</li>
+     *            <li>year</li>
+     *            <li>milliseconds</li>
+     *            <li>minutes</li>
+     *            <li>seconds</li>
+     *            <li>hours</li>
+     *            <li>time</li>
+     *        </ul>
+     *  e.g usages :expect(date).toMatchDatePart(date, 'day');
+     * @beta
+     */
+    matchers.toMatchDatePart = function (oDate, part) {
+        var cDate = this.actual,
+            msg,
+            result;
+        if (hlp.typeOf(cDate, 'Date') && hlp.typeOf(oDate, 'Date')) {
+            switch (part) {
+            case 'date':
+                result = cDate.getDate() === oDate.getDate();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getDate()), hlp.dp(oDate.getDate()));
+                break;
+            case 'day':
+                result = cDate.getDay() === oDate.getDay();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getDay()), hlp.dp(oDate.getDay()));
+                break;
+            case 'month':
+                result = cDate.getMonth() === oDate.getMonth();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getMonth()), hlp.dp(oDate.getMonth()));
+                break;
+            case 'year':
+                result = cDate.getFullYear() === oDate.getFullYear();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getFullYear()), hlp.dp(oDate.getFullYear()));
+                break;
+            case 'milliseconds':
+                result = cDate.getMilliseconds() === oDate.getMilliseconds();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getMilliseconds()), hlp.dp(oDate.getMilliseconds()));
+                break;
+            case 'seconds':
+                result = cDate.getSeconds() === oDate.getSeconds();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getSeconds()), hlp.dp(oDate.getSeconds()));
+                break;
+            case 'minutes':
+                result = cDate.getMinutes() === oDate.getMinutes();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getMinutes()), hlp.dp(oDate.getMinutes()));
+                break;
+            case 'hours':
+                result = cDate.getHours() === oDate.getHours();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getHours()), hlp.dp(oDate.getHours()));
+                break;
+            case 'time':
+                result = cDate.getTime() === oDate.getTime();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getTime()), hlp.dp(oDate.getTime()));
+                break;
+            default:
+                msg = hlp.msg.date.nomatch.part.t(part);
+            }
+
+        } else {
+            msg = hlp.msg.date.invalidType.t(hlp.dp(cDate), hlp.dp(oDate));
+            result = false;
+        }
+        this.message = function () { return msg; };
         return result;
     };
 

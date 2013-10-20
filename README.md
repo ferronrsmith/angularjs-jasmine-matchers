@@ -90,5 +90,4 @@ Under Windows 7, you have to launch `C:\Users\[UserName]\AppData\Local\Google\Ch
 If you can, have another developer sanity check your change
 
 
-### Build status
-[![Build Status](https://travis-ci.org/ferronrsmith/angularjs-jasmine-matchers.png?branch=master)](https://travis-ci.org/ferronrsmith/angularjs-jasmine-matchers)
+### Build sta

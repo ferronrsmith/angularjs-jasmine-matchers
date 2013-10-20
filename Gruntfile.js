@@ -27,16 +27,40 @@ module.exports = function (grunt) {
                 configFile: 'config/karma.unstable.conf.js'
             }
         },
+        yuidoc: {
+            compile: {
+                name: '<%= pkg.name %>',
+                description: '<%= pkg.description %>',
+                version: '<%= pkg.version %>',
+                url: '<%= pkg.homepage %>',
+                options: {
+                    paths: ['dist/', 'test/'],
+//                    themedir: 'path/to/custom/theme/',
+                    outdir: 'docs/'
+                }
+            }
+        },
         watch: {
             files: '<%= meta.bin.lintFiles %>',
-            tasks: ['jslint', 'karma:stable']
+            tasks: ['jslint', 'karma:stable', 'yuidoc', 'notify:watch']
+        },
+        notify: {
+            watch: {
+                options: {
+                    title: 'Task Complete',  // optional
+                    message: 'Finish Linting, Running Tests & Building Documentation' //required
+                }
+            }
         }
     });
 
+    grunt.loadNpmTasks('grunt-notify');
     grunt.loadNpmTasks('grunt-jslint');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.loadNpmTasks('grunt-karma');
     grunt.registerTask('test', ['jslint', 'karma:stable']);
+    grunt.registerTask('doc', ['yuidoc']);
     grunt.registerTask('default', ['jslint', 'karma:stable']);
 
 };

@@ -1,0 +1,420 @@
+{
+    "project": {
+        "name": "angular-jasmine-matchers",
+        "description": "Matchers for Jasmine Testing in AngularJS",
+        "version": "0.0.1",
+        "url": "http://ferronrsmith.github.io/"
+    },
+    "files": {
+        "dist/matchers.js": {
+            "name": "dist/matchers.js",
+            "modules": {},
+            "classes": {
+                "matchers": 1
+            },
+            "fors": {},
+            "namespaces": {}
+        },
+        "test/matchersSpec.js": {
+            "name": "test/matchersSpec.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        }
+    },
+    "modules": {},
+    "classes": {
+        "matchers": {
+            "name": "matchers",
+            "shortname": "matchers",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "file": "dist/matchers.js",
+            "line": 15,
+            "description": "Provides a comprehensive set of custom matchers for the Jasmine testing framework",
+            "mainName": "matchers",
+            "tag": "main",
+            "itemtype": "main",
+            "_main": true
+        }
+    },
+    "classitems": [
+        {
+            "file": "dist/matchers.js",
+            "line": 48,
+            "description": "Returns the index of an object in a given array",
+            "itemtype": "method",
+            "name": "hpl.indexOf",
+            "params": [
+                {
+                    "name": "array",
+                    "description": ":- array object to be checked"
+                },
+                {
+                    "name": "obj",
+                    "description": ":- object (value) to be checked for in the array"
+                }
+            ],
+            "return": {
+                "description": "index of the obj in the array",
+                "type": "Number"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 65,
+            "description": "Check if an object has a particular property matches the expected value",
+            "itemtype": "method",
+            "name": "hpl.hasProperty",
+            "params": [
+                {
+                    "name": "actualValue",
+                    "description": "property value"
+                },
+                {
+                    "name": "expectedValue",
+                    "description": "expected value"
+                }
+            ],
+            "return": {
+                "description": "boolean indicating if the values match",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 79,
+            "description": "Checks if a given element/JavaScript object matches the type",
+            "itemtype": "method",
+            "name": "hpl.typeOf",
+            "params": [
+                {
+                    "name": "actual",
+                    "description": "Object to be checked for type comparison"
+                },
+                {
+                    "name": "type",
+                    "description": "type to be matched"
+                }
+            ],
+            "return": {
+                "description": "boolean indicating if the type matches the object type",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 90,
+            "description": "Checks if the a given word/phrase/substring is at the end of a string",
+            "itemtype": "method",
+            "name": "hpl.endsWith",
+            "params": [
+                {
+                    "name": "haystack",
+                    "description": "string to be search",
+                    "type": "String"
+                },
+                {
+                    "name": "needle",
+                    "description": "word/phrase/substring",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "boolean indicating if the word/phrase/substring was found at the end of the string",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 101,
+            "description": "Checks if the a given word/phrase/substring is at the beginning of a string",
+            "itemtype": "method",
+            "name": "hpl.endsWith",
+            "params": [
+                {
+                    "name": "haystack",
+                    "description": "string to be search",
+                    "type": "String"
+                },
+                {
+                    "name": "needle",
+                    "description": "word/phrase/substring",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "boolean indicating if the word/phrase/substring was found at the beginning of the string",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 112,
+            "description": "Coverts a given object literal to an array",
+            "itemtype": "method",
+            "name": "hlp.objToArray",
+            "params": [
+                {
+                    "name": "obj",
+                    "description": "- object literal"
+                }
+            ],
+            "return": {
+                "description": "array representation of the object",
+                "type": "Array"
+            },
+            "since": "0.2 :- Removed $$hashKey check",
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 128,
+            "description": "Coverts a given a list of object literals to a flatten array",
+            "itemtype": "method",
+            "name": "hlp.objListToArray",
+            "params": [
+                {
+                    "name": "obj",
+                    "description": "- object literals"
+                }
+            ],
+            "return": {
+                "description": "flatten array representation of the objects",
+                "type": "Array"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 146,
+            "description": "Message constant for jQuery",
+            "type": "{string}",
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 172,
+            "description": "Check if jQuery is present",
+            "return": {
+                "description": "boolean indicating if jQuery is present",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 483,
+            "description": "Does not return true if subject is null",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 495,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 505,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 515,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 525,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 545,
+            "description": "Asserts subject is an Array with a defined number of members",
+            "params": [
+                {
+                    "name": "size",
+                    "description": "",
+                    "type": "Number"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 557,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 567,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 578,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 598,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 629,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 679,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "matchers"
+        },
+        {
+            "file": "dist/matchers.js",
+            "line": 729,
+            "itemtype": "method",
+            "name": "matchers.toMatchDatePart",
+            "params": [
+                {
+                    "name": "oDate",
+                    "description": "Date to be compared",
+                    "type": "Date"
+                },
+                {
+                    "name": "part",
+                    "description": "specific part/property of the date you want to be compared </br\n        <br />\n        <b>Currently supported parts are listed below :</b>\n        <ul>\n            <li>date</li>\n            <li>day</li>\n            <li>month</li>\n            <li>year</li>\n            <li>milliseconds</li>\n            <li>minutes</li>\n            <li>seconds</li>\n            <li>hours</li>\n            <li>time</li>\n        </ul>\n  e.g usages :expect(date).toMatchDatePart(date, 'day');",
+                    "type": "String"
+                }
+            ],
+            "beta": 1,
+            "class": "matchers"
+        },
+        {
+            "file": "test/matchersSpec.js",
+            "line": 2,
+            "description": "Created by ferron on 9/28/13.",
+            "class": ""
+        }
+    ],
+    "warnings": [
+        {
+            "message": "Missing item type\nMessage constant for jQuery",
+            "line": " dist/matchers.js:146"
+        },
+        {
+            "message": "Missing item type\nCheck if jQuery is present",
+            "line": " dist/matchers.js:172"
+        },
+        {
+            "message": "Missing item type\nDoes not return true if subject is null",
+            "line": " dist/matchers.js:483"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:495"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:505"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:515"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:525"
+        },
+        {
+            "message": "Missing item type\nAsserts subject is an Array with a defined number of members",
+            "line": " dist/matchers.js:545"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:557"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:567"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:578"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:598"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:629"
+        },
+        {
+            "message": "Missing item type",
+            "line": " dist/matchers.js:679"
+        },
+        {
+            "message": "Missing item type\nCreated by ferron on 9/28/13.",
+            "line": " test/matchersSpec.js:2"
+        }
+    ]
+}
