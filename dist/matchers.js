@@ -158,8 +158,8 @@ beforeEach(function () {
         }
     };
 
-    hlp.dp = function () {
-        angular.mock.dump(arguments);
+    hlp.dp = function (x) {
+        return angular.mock.dump(arguments.length > 1 ? arguments : x);
     };
 
     String.prototype.t = function () {
@@ -685,6 +685,9 @@ beforeEach(function () {
     matchers.toBeUniqueArray = function () {
         // iterate over the array, adding unique elements to o
         var arr = this.actual, i, len = this.actual.length, o = [];
+        this.message = function () {
+            return "Expected " + hlp.dp(this.actual) + " values {0} to be unique".t(this.isNot ? "not" : "");
+        };
         for (i = 0; i < len; i += 1) {
             if (hlp.indexOf(o, arr[i]) === -1) {
                 o.push(arr[i]);
@@ -692,11 +695,6 @@ beforeEach(function () {
                 return false;
             }
         }
-
-        this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " values is not unique";
-        };
-
         return true;
     };
 
@@ -806,4 +804,7 @@ beforeEach(function () {
 
     // aliases
     this.addMatchers(matchers);
+
+    // Keep a reference to the original matchers, for tests
+    jasmine.__angular_jasmine_matchers__ = matchers;
 });
