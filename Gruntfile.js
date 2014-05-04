@@ -59,8 +59,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.loadNpmTasks('grunt-karma');
-    grunt.registerTask('test', ['jslint', 'karma:stable']);
+    grunt.registerTask('test', ['jslint', 'karma:stable', 'karma:unstable']);
     grunt.registerTask('doc', ['yuidoc']);
-    grunt.registerTask('default', ['jslint', 'karma:stable']);
+    grunt.registerTask('default', ['jslint', 'karma:stable', 'karma:unstable']);
 
 };
