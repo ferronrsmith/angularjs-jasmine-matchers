@@ -7,6 +7,7 @@ module.exports = function (config) {
         files: [
             'lib/angular-unstable-latest.js',
             'lib/angular-unstable-mocks.js',
+            'lib/datespy.min.js',
             'dist/*.js',
             'test/*.js'
         ],

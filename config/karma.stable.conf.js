@@ -7,6 +7,7 @@ module.exports = function (config) {
         files: [
             'lib/angular-stable-latest.js',
             'lib/angular-stable-mocks.js',
+            'lib/datespy.min.js',
             'dist/*.js',
             'test/*.js'
         ],
