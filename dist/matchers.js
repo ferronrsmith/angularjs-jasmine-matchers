@@ -162,6 +162,16 @@ beforeEach(function () {
         return angular.mock.dump(arguments.length > 1 ? arguments : x);
     };
 
+    /**
+     * Returns isNot String
+     * @param context
+     * @param altText
+     */
+    hlp.isNot = function (context, altText) {
+        altText = altText || "";
+        return context.isNot ? "not " : altText;
+    };
+
     String.prototype.t = function () {
         var args = arguments;
         return this.replace(/\{(\d+)\}/g, function (match, number) {
@@ -589,7 +599,7 @@ beforeEach(function () {
         this.message = function () {
             var msg = "";
             if (bjQuery) {
-                msg = "Expected '" + hlp.dp(this.actual) + "' to be a non empty string ";
+                msg = "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a non empty string ";
             } else {
                 msg = hlp.msg.jQuery;
             }
@@ -603,28 +613,28 @@ beforeEach(function () {
      */
     matchers.toBeNumber = function () {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to be a [Number]";
+            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a [Number]";
         };
         return hlp.isNumber(this.actual);
     };
 
     matchers.toBeEvenNumber = function () {
         this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " to be an even number";
+            return "Expected " + hlp.dp(this.actual) + " to " + hlp.isNot(this, "") + "be an even number";
         };
         return hlp.isNumber(this.actual) && this.actual % 2 === 0;
     };
 
     matchers.toBeOddNumber = function () {
         this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " to be an odd number";
+            return "Expected " + hlp.dp(this.actual) + " to " + hlp.isNot(this, "") + "be an odd number";
         };
         return hlp.isNumber(this.actual) && this.actual % 2 !== 0;
     };
 
     matchers.toBeNaN = function () {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to be a [NaN]";
+            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a [NaN]";
         };
         return isNaN(this.actual);
     };
@@ -634,28 +644,28 @@ beforeEach(function () {
      */
     matchers.toBeFunction = function () {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to be a [Function]";
+            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a [Function]";
         };
         return hlp.typeOf(this.actual, 'Function');
     };
 
     matchers.toHaveLength = function (length) {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to have a length of " + length;
+            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "have a length of " + length;
         };
         return this.actual.length === length;
     };
 
     matchers.toStartWith = function (value) {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to start with " + value;
+            return "Expected '" + hlp.dp(this.actual) + " " + hlp.isNot(this, "") + "to start with " + value;
         };
         return hlp.startsWith(this.actual, value);
     };
 
     matchers.toEndWith = function (value) {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to end with " + value;
+            return "Expected '" + hlp.dp(this.actual) + " " + hlp.isNot(this, "") + "' to end with " + value;
         };
         return hlp.endsWith(this.actual, value);
     };

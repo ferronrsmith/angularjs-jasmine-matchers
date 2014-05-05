@@ -1,4 +1,4 @@
-/*global jasmine, describe, xdescribe, it, expect, afterEach, beforeEach, angular, datespy */
+/*global jasmine, describe, xdescribe, it, iit, expect, afterEach, beforeEach, angular, datespy, console */
 /**
  * Created by ferron on 9/28/13.
  */
@@ -21,8 +21,9 @@ describe('Testing Custom Matchers Messages', function () {
         /*jslint nomen: true*/
         angular.forEach(jasmine.__angular_jasmine_matchers__, function (method, methodName) {
             Matchers.prototype[methodName] = function () {
-                var result = !!(method.apply(this, arguments));
-                if (result !== this.isNot) {
+                method.apply(this, arguments);
+                // only set message to null if not is not in the msg body
+                if (this.isNot && !/not/.test(this.message())) {
                     this.message = null;
                 }
                 return this;
@@ -53,19 +54,25 @@ describe('Testing Custom Matchers Messages', function () {
 
     it("should get a message from toBeSameDate", function () {
         var date1 = new Date("2014-01-01"), date2 = new Date("2014-02-02");
-//        var date1 = new datespy.clock.Date(2014, 0, 1), date2 = new datespy.clock.Date(2014, 1, 2);
         expect(test(date1).toBeSameDate(date2).message()).toMatch(/2014-01-01.*2014-02-02/);
         expect(test(date1).not.toBeSameDate(date1).message()).toMatch(/not/);
     });
 
     it("should get a message from toBeEvenNumber", function () {
         expect(test(33).toBeEvenNumber().message()).toMatch(/33.*even/);
-        // xxx todo: implement "not" message for this matcher
     });
+
+    it("should get a message from toBeEvenNumber not statement", function () {
+        expect(test(22).not.toBeEvenNumber().message()).toMatch(/22.*not.*even/);
+    });
+
 
     it("should get a message from toBeOddNumber", function () {
         expect(test(22).toBeOddNumber().message()).toMatch(/22.*odd/);
-        // xxx todo: implement "not" message for this matcher
+    });
+
+    it("should get a message from toBeOddNumber not statement", function () {
+        expect(test(22).not.toBeOddNumber().message()).toMatch(/22.*not/);
     });
 
     it("should get a message from toBeIso8601Date", function () {
