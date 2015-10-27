@@ -4,7 +4,7 @@
  */
 
 
-describe('Testing Custom Matchers Messages', function () {
+xdescribe('Testing Custom Matchers Messages', function () {
     "use strict";
 
     var test, clock;

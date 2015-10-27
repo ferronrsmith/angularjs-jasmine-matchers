@@ -5,8 +5,8 @@ module.exports = function (config) {
         basePath: '../',
         frameworks: ['jasmine'],
         files: [
-            'lib/angular-unstable-latest.js',
-            'lib/angular-unstable-mocks.js',
+            'lib/angular-legacy-latest.js',
+            'lib/angular-legacy-mocks.js',
             'lib/datespy.min.js',
             'dist/*.js',
             'test/*.js'

@@ -21,10 +21,10 @@ module.exports = function (grunt) {
                 reporters: 'dots'
             },
             stable: {
-                configFile: 'config/karma.stable.conf.js'
+                configFile: 'config/karma.legacy.conf.js'
             },
             unstable: {
-                configFile: 'config/karma.unstable.conf.js'
+                configFile: 'config/karma.stable.conf.js'
             }
         },
         yuidoc: {

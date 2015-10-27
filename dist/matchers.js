@@ -2,7 +2,7 @@
  (c) Ferron Hanse 2012
  https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
  Released under the MIT license
-*/
+ */
 
 
 /*jslint nomen : true*/
@@ -19,7 +19,8 @@
  **/
 beforeEach(function () {
     "use strict";
-    var matchers = {},
+    var customMatchers = {},
+        matchers = {},
         hlp = {},
         bjQuery = false;
 
@@ -77,14 +78,22 @@ beforeEach(function () {
     };
 
     /**
+     * Returns the type of the object entered
+     * @param actual -  object to be checked
+     */
+    hlp.typeOf = function (actual) {
+        return Object.prototype.toString.call(actual).replace(/(\[|object|\s|\])/g, "").toLowerCase();
+    };
+
+    /**
      * Checks if a given element/JavaScript object matches the type
-     * @method hpl.typeOf
+     * @method hpl.isOfType
      * @param actual Object to be checked for type comparison
      * @param type type to be matched
      * @return {boolean} boolean indicating if the type matches the object type
      */
-    hlp.typeOf = function (actual, type) {
-        return Object.prototype.toString.call(actual) === "[object " + type + "]";
+    hlp.isOfType = function (actual, type) {
+        return hlp.typeOf(actual) === type.toLowerCase();
     };
 
     /**
@@ -140,7 +149,7 @@ beforeEach(function () {
     };
 
     hlp.isNumber = function (val) {
-        return !isNaN(parseFloat(val)) && !hlp.typeOf(val, 'String');
+        return !isNaN(parseFloat(val)) && !hlp.isOfType(val, 'String');
     };
 
     /**
@@ -148,12 +157,12 @@ beforeEach(function () {
      * @type {string}
      */
     hlp.msg = {
-        jQuery : "Error: jQuery not found. this matcher has a dependency on jQuery",
-        date : {
-            invalidType : 'Expected {0} & {1} to be a Date',
-            nomatch : {
-                Date : 'Expected {0} & {1} to match',
-                part : "Invalid part : {0} entered"
+        jQuery: "Error: jQuery not found. this matcher has a dependency on jQuery",
+        date: {
+            invalidType: 'Expected {0} & {1} to be a Date',
+            nomatch: {
+                Date: 'Expected {0} & {1} to match',
+                part: "Invalid part : {0} entered"
             }
         }
     };
@@ -172,6 +181,25 @@ beforeEach(function () {
         return context.isNot ? "not " : altText;
     };
 
+    hlp.evaluate = function (test) {
+        return {
+            compare: function (actual, expected) {
+                return test(actual, false, expected);
+            },
+            negativeCompare: function (actual, expected) {
+                return test(actual, true, expected);
+            }
+        };
+    };
+
+    hlp.checkArgumentType = function (value, type) {
+        var result = hlp.isOfType(value, type);
+        if (!result) {
+            throw new Error("Invalid type detected, Expected [{0}], but was [{1}]".t(type, hlp.typeOf(value)));
+        }
+    };
+
+
     String.prototype.t = function () {
         var args = arguments;
         return this.replace(/\{(\d+)\}/g, function (match, number) {
@@ -187,23 +215,11 @@ beforeEach(function () {
         return (window.$ !== undefined || window.jQuery !== undefined);
     }());
 
-    // a check that allows the matchers to work with angular-scenario
-    // NB: Not all matchers work with angualar-scenario and i have not done extensive testing on this
-    if (this.addMatchers === undefined) {
-        this.addMatchers = function (properties) {
-            if (angular.scenario !== undefined && angular.isObject(properties)) {
-                angular.forEach(properties, function (value, key) {
-                    angular.scenario.matcher(key, value);
-                });
-            }
-        };
-    }
-
-    matchers.toBeInvalid =  hlp.cssMatcher('ng-invalid', 'ng-valid');
-    matchers.toBeValid =  hlp.cssMatcher('ng-valid', 'ng-invalid');
-    matchers.toBeDirty =  hlp.cssMatcher('ng-dirty', 'ng-pristine');
-    matchers.toBePristine = hlp.cssMatcher('ng-pristine', 'ng-dirty');
-    matchers.toEqual = function (expected) {
+    customMatchers.toBeInvalid = hlp.cssMatcher('ng-invalid', 'ng-valid');
+    customMatchers.toBeValid = hlp.cssMatcher('ng-valid', 'ng-invalid');
+    customMatchers.toBeDirty = hlp.cssMatcher('ng-dirty', 'ng-pristine');
+    customMatchers.toBePristine = hlp.cssMatcher('ng-pristine', 'ng-dirty');
+    customMatchers.toEqual = function (expected) {
         if (this.actual && this.actual.$$log) {
             if (typeof expected === 'string') {
                 this.actual = this.actual.toString();
@@ -214,14 +230,14 @@ beforeEach(function () {
         return jasmine.Matchers.prototype.toEqual.call(this, expected);
     };
 
-    matchers.toEqualData = function (expected) {
+    customMatchers.toEqualData = function (expected) {
         this.message = function () {
             return "Expected " + hlp.dp(this.actual) + " data {0} to Equal ".t(this.isNot ? "not" : "") + expected;
         };
         return angular.equals(this.actual, expected);
     };
 
-    matchers.toEqualError = function (message) {
+    customMatchers.toEqualError = function (message) {
         this.message = function () {
             var expected;
             if (this.actual.message && this.actual.name === 'Error') {
@@ -234,7 +250,7 @@ beforeEach(function () {
         return this.actual.name === 'Error' && this.actual.message === message;
     };
 
-    matchers.toMatchError = function (messageRegexp) {
+    customMatchers.toMatchError = function (messageRegexp) {
         this.message = function () {
             var expected;
             if (this.actual.message && this.actual.name === 'Error') {
@@ -247,7 +263,7 @@ beforeEach(function () {
         return this.actual.name === 'Error' && messageRegexp.test(this.actual.message);
     };
 
-    matchers.toHaveBeenCalledOnce = function () {
+    customMatchers.toHaveBeenCalledOnce = function () {
         if (arguments.length > 0) {
             throw new Error('toHaveBeenCalledOnce does not take arguments, use toHaveBeenCalledWith');
         }
@@ -268,7 +284,7 @@ beforeEach(function () {
         return this.actual.callCount === 1;
     };
 
-    matchers.toHaveBeenCalledOnceWith = function () {
+    customMatchers.toHaveBeenCalledOnceWith = function () {
         var expectedArgs = jasmine.util.argsToArray(arguments);
 
         if (!jasmine.isSpy(this.actual)) {
@@ -307,21 +323,21 @@ beforeEach(function () {
         return this.actual.callCount === 1 && this.env.contains_(this.actual.argsForCall, expectedArgs);
     };
 
-    matchers.toBeOneOf = function () {
+    customMatchers.toBeOneOf = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be one of '".t(this.isNot ? "not" : "") + hlp.dp(arguments) + "'.";
         };
         return hlp.indexOf(arguments, this.actual) !== -1;
     };
 
-    matchers.toHaveClass = function (clazz) {
+    customMatchers.toHaveClass = function (clazz) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} have class '".t(this.isNot ? "not" : "") + clazz + "'.";
         };
         return this.actual.hasClass ? this.actual.hasClass(clazz) : angular.element(this.actual).hasClass(clazz);
     };
 
-    matchers.toHaveCss = function (css) {
+    customMatchers.toHaveCss = function (css) {
         var prop; // css prop
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} have css '".t(this.isNot ? "not" : "") + hlp.dp(css) + "'.";
@@ -336,50 +352,50 @@ beforeEach(function () {
         return true;
     };
 
-    matchers.toMatchRegex = function (regex) {
+    customMatchers.toMatchRegex = function (regex) {
 
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} match '".t(this.isNot ? "not" : "") + regex;
         };
 
         var reg;
-        if (hlp.typeOf(regex, "String")) {
+        if (hlp.isOfType(regex, "String")) {
             reg = new RegExp(regex);
-        } else if (hlp.typeOf(regex, "RegExp")) {
+        } else if (hlp.isOfType(regex, "RegExp")) {
             reg = regex;
         }
         return reg.test(this.actual);
     };
 
-    matchers.toBeVisible = function () {
+    customMatchers.toBeVisible = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be visible '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':visible');
     };
 
-    matchers.toBeHidden = function () {
+    customMatchers.toBeHidden = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be hidden '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':hidden');
     };
 
-    matchers.toBeSelected = function () {
+    customMatchers.toBeSelected = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be selected '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':selected');
     };
 
-    matchers.toBeChecked = function () {
+    customMatchers.toBeChecked = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be checked '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':checked');
     };
 
-    matchers.toBeSameDate = function (date) {
+    customMatchers.toBeSameDate = function (date) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be equal to '".t(this.isNot ? "not" : "") + hlp.dp(date);
         };
@@ -393,21 +409,21 @@ beforeEach(function () {
             actualDate.getSeconds() === date.getSeconds();
     };
 
-    matchers.toBeEmpty = function () {
+    customMatchers.toBeEmpty = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
         };
         return this.actual.is(':empty');
     };
 
-    matchers.toBeEmptyString = function () {
+    customMatchers.toBeEmptyString = function () {
         this.message = function () {
             return "Expected string '" + hlp.dp(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
         };
-        return hlp.typeOf(this.actual, 'String') && $.trim(this.actual).length === 0;
+        return hlp.isOfType(this.actual, 'String') && $.trim(this.actual).length === 0;
     };
 
-    matchers.toExist = function () {
+    customMatchers.toExist = function () {
         this.message = function () {
             var msg = "";
             if (bjQuery) {
@@ -420,42 +436,42 @@ beforeEach(function () {
         return bjQuery ? $(document).find(this.actual).length : false;
     };
 
-    matchers.toHaveAttr = function (attributeName, expectedAttributeValue) {
+    customMatchers.toHaveAttr = function (attributeName, expectedAttributeValue) {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have attribute '".t(this.isNot ? "not" : "") + attributeName + "' with value "  + expectedAttributeValue + ".";
+            return "Expected '" + hlp.dp(this.actual) + "' to {0} have attribute '".t(this.isNot ? "not" : "") + attributeName + "' with value " + expectedAttributeValue + ".";
         };
         return hlp.hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
     };
 
-    matchers.toHaveProp = function (propertyName, expectedPropertyValue) {
+    customMatchers.toHaveProp = function (propertyName, expectedPropertyValue) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} have property '".t(this.isNot ? "not" : "") + expectedPropertyValue + "'.";
         };
         return hlp.hasProperty(this.actual.prop(propertyName), expectedPropertyValue);
     };
 
-    matchers.toHaveId = function (id) {
+    customMatchers.toHaveId = function (id) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} have id '".t(this.isNot ? "not" : "") + id + "'.";
         };
         return this.actual.attr('id') === id;
     };
 
-    matchers.toBeDisabled = function (selector) {
+    customMatchers.toBeDisabled = function (selector) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be disabled '".t(this.isNot ? "not" : "") + hlp.dp(selector) + "'.";
         };
         return this.actual.is(':disabled');
     };
 
-    matchers.toBeFocused = function (selector) {
+    customMatchers.toBeFocused = function (selector) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be focused '".t(this.isNot ? "not" : "") + hlp.dp(selector) + "'.";
         };
         return this.actual.is(':focus');
     };
 
-    matchers.toHaveText = function (text) {
+    customMatchers.toHaveText = function (text) {
         if (!bjQuery) {
             return false;
         }
@@ -479,14 +495,14 @@ beforeEach(function () {
         return result;
     };
 
-    matchers.toHaveValue = function (value) {
+    customMatchers.toHaveValue = function (value) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} have value '".t(this.isNot ? "not" : "") + value + "'.";
         };
         return this.actual.val() === value;
     };
 
-    matchers.toHaveData = function (key, expectedValue) {
+    customMatchers.toHaveData = function (key, expectedValue) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} have data '" + expectedValue + "'.".t(this.isNot ? "not" : "");
         };
@@ -497,62 +513,65 @@ beforeEach(function () {
      * Does not return true if subject is null
      * @return {Boolean}
      */
-    matchers.toBeObject = function () {
+    customMatchers.toBeObject = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be an [Object]".t(this.isNot ? "not" : "");
         };
-        return hlp.typeOf(this.actual, 'Object');
+        return hlp.isOfType(this.actual, 'Object');
     };
 
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeArray = function () {
+    customMatchers.toBeArray = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be an [Array]".t(this.isNot ? "not" : "");
         };
-        return hlp.typeOf(this.actual, 'Array');
+        return hlp.isOfType(this.actual, 'Array');
     };
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeDate = function () {
+    customMatchers.toBeDate = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be a [Date]".t(this.isNot ? "not" : "");
         };
-        return hlp.typeOf(this.actual, 'Date');
+        return hlp.isOfType(this.actual, 'Date');
     };
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeBefore = function (date) {
+    customMatchers.toBeBefore = function (date) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be before".t(this.isNot ? "not" : "") + hlp.dp(date);
         };
-        return hlp.typeOf(this.actual, 'Date') && this.actual.getTime() < date.getTime();
+        return hlp.isOfType(this.actual, 'Date') && this.actual.getTime() < date.getTime();
     };
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeAfter = function (date) {
+    customMatchers.toBeAfter = function (date) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be after".t(this.isNot ? "not" : "") + hlp.dp(date);
         };
-        return hlp.typeOf(this.actual, 'Date') && this.actual.getTime() > date.getTime();
+        return hlp.isOfType(this.actual, 'Date') && this.actual.getTime() > date.getTime();
     };
 
     matchers.toBeIso8601Date = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be ISO8601 Date Format".t(this.isNot ? "not" : "");
+        return {
+            compare: function (actual) {
+                return {
+                    pass: hlp.isOfType(actual, 'String')
+                        && actual.length >= 10
+                        && new Date(actual).toString() !== 'Invalid Date'
+                        && new Date(actual).toISOString().slice(0, actual.length) === actual
+                };
+            }
         };
-        return hlp.typeOf(this.actual, 'String')
-            && this.actual.length >= 10
-            && new Date(this.actual).toString() !== 'Invalid Date'
-            && new Date(this.actual).toISOString().slice(0, this.actual.length) === this.actual;
     };
 
     /**
@@ -560,38 +579,38 @@ beforeEach(function () {
      * @param  {Number} size
      * @return {Boolean}
      */
-    matchers.toBeArrayOfSize = function (size) {
+    customMatchers.toBeArrayOfSize = function (size) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be an [Array] of size {1}".t(this.isNot ? "not" : "", size);
         };
-        return hlp.typeOf(this.actual, 'Array') && this.actual.length === size;
+        return hlp.isOfType(this.actual, 'Array') && this.actual.length === size;
     };
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeString = function () {
+    customMatchers.toBeString = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be a [String]".t(this.isNot ? "not" : "");
         };
-        return hlp.typeOf(this.actual, 'String');
+        return hlp.isOfType(this.actual, 'String');
     };
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeBoolean = function () {
+    customMatchers.toBeBoolean = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be Boolean".t(this.isNot ? "not" : "");
         };
-        return hlp.typeOf(this.actual, 'Boolean');
+        return hlp.isOfType(this.actual, 'Boolean');
     };
 
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeNonEmptyString = function () {
+    customMatchers.toBeNonEmptyString = function () {
         if (!bjQuery) {
             return false;
         }
@@ -605,142 +624,162 @@ beforeEach(function () {
             }
             return msg;
         };
-        return hlp.typeOf(this.actual, 'String') && $.trim(this.actual).length > 0;
+        return hlp.isOfType(this.actual, 'String') && $.trim(this.actual).length > 0;
     };
 
     /**
-     * @return {Boolean}
      */
     matchers.toBeNumber = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a [Number]";
+        var test = function (actual, isNot) {
+            var result = hlp.isNumber(actual);
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " be a number"
+            };
         };
-        return hlp.isNumber(this.actual);
+
+        return hlp.evaluate.call(this, test);
     };
 
     matchers.toBeEvenNumber = function () {
-        this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " to " + hlp.isNot(this, "") + "be an even number";
+        var test = function (actual, isNot) {
+            var result = hlp.isNumber(actual) && actual % 2 === 0;
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " be an even number"
+            };
         };
-        return hlp.isNumber(this.actual) && this.actual % 2 === 0;
+
+        return hlp.evaluate.call(this, test);
     };
 
     matchers.toBeOddNumber = function () {
-        this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " to " + hlp.isNot(this, "") + "be an odd number";
+        var test = function (actual, isNot) {
+            var result = hlp.isNumber(actual) && actual % 2 !== 0;
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " be an odd number"
+            };
         };
-        return hlp.isNumber(this.actual) && this.actual % 2 !== 0;
+
+        return hlp.evaluate.call(this, test);
     };
 
     matchers.toBeNaN = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a [NaN]";
+        var test = function (actual, isNot) {
+            var result = isNaN(actual);
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected '" + hlp.dp(actual) + "' to" + (isNot ? " not" : "") + " be a [NaN]"
+            };
         };
-        return isNaN(this.actual);
+
+        return hlp.evaluate.call(this, test);
     };
 
     /**
      * @return {Boolean}
      */
-    matchers.toBeFunction = function () {
+    customMatchers.toBeFunction = function () {
         this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a [Function]";
+            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + " be a [Function]";
         };
-        return hlp.typeOf(this.actual, 'Function');
+        return hlp.isOfType(this.actual, 'Function');
     };
 
-    matchers.toHaveLength = function (length) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "have a length of " + length;
+    matchers.toHaveLength = function () {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'string');
+            hlp.checkArgumentType(expected, 'number');
+            var result = actual.length === expected;
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " have a length of " + expected + " but was " + actual.length
+            };
         };
-        return this.actual.length === length;
+
+        return hlp.evaluate.call(this, test);
     };
 
-    matchers.toStartWith = function (value) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + " " + hlp.isNot(this, "") + "to start with " + value;
+    matchers.toStartWith = function () {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'string');
+            hlp.checkArgumentType(expected, 'string');
+            var result = hlp.startsWith(actual, expected);
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " to start with " + expected
+            };
         };
-        return hlp.startsWith(this.actual, value);
+
+        return hlp.evaluate.call(this, test);
     };
 
-    matchers.toEndWith = function (value) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + " " + hlp.isNot(this, "") + "' to end with " + value;
+    matchers.toEndWith = function () {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'string');
+            hlp.checkArgumentType(expected, 'string');
+            var result = hlp.endsWith(actual, expected);
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " to ends with " + expected
+            };
         };
-        return hlp.endsWith(this.actual, value);
+
+        return hlp.evaluate.call(this, test);
     };
 
-    matchers.toContainOnce = function (value) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to contain only one " + value;
+    matchers.toContainOnce = function () {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'string');
+            hlp.checkArgumentType(expected, 'string');
+            var result = false, firstFoundAt;
+            if (actual) {
+                firstFoundAt = actual.indexOf(expected);
+                result = firstFoundAt !== -1 && firstFoundAt === actual.lastIndexOf(expected);
+            }
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " to contain only one " + expected
+            };
         };
-        var actual = this.actual, containsOnce = false, firstFoundAt;
-        if (actual) {
-            firstFoundAt = actual.indexOf(value);
-            containsOnce = firstFoundAt !== -1 && firstFoundAt === actual.lastIndexOf(value);
-        }
-        return containsOnce;
+
+        return hlp.evaluate.call(this, test);
     };
 
-    matchers.toContainSelector = function (selector) {
+    customMatchers.toContainSelector = function (selector) {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to have contain '" + hlp.dp(selector) + "'.";
         };
         return this.actual.find(selector).length;
     };
 
-    /**
-     * @return {boolean}
-     */
     matchers.toBeUniqueArray = function () {
-        // iterate over the array, adding unique elements to o
-        var arr = this.actual, i, len = this.actual.length, o = [];
-        this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " values {0} to be unique".t(this.isNot ? "not" : "");
-        };
-        for (i = 0; i < len; i += 1) {
-            if (hlp.indexOf(o, arr[i]) === -1) {
-                o.push(arr[i]);
-            } else {
-                return false;
+        var test = function (actual, isNot) {
+            hlp.checkArgumentType(actual, 'array');
+            var result = true, i, len = actual.length, o = [];
+
+            // iterate over the array, adding unique elements to o
+            for (i = 0; i < len; i += 1) {
+                if (hlp.indexOf(o, actual[i]) === -1) {
+                    o.push(actual[i]);
+                } else {
+                    result = false;
+                    break;
+                }
             }
-        }
-        return true;
-    };
-
-    matchers.toHaveMatchingAtrr = function (attr, obj) {
-        var arr = hlp.objListToArray(obj),
-            result = true,
-            temp = this.actual,
-            iter = 0,
-            len = this.actual.length;
-
-        // can't compare arrays of different lengths
-        if (this.actual.length !== arr.length) {
-            return false;
-        }
-
-        for (iter = 0; iter < len; iter += 1) {
-            result &= temp.eq(iter).attr(attr) === arr[iter];
-        }
-
-        this.message = function () {
-            var message;
-            if (this.actual.length === arr.length) {
-                message = "Expected '" + hlp.dp(this.actual) + "' elements to have attributes " + hlp.dp(arr) + " " + hlp.dp(arr);
-            } else {
-                message = "Can't compare obj properties of length " + arr.length + " with element collection of length " + this.actual.length;
-            }
-            return message;
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected " + hlp.dp(actual) + " values {0} to be unique".t(isNot ? "not" : "")
+            };
         };
-
-        return result;
+        return hlp.evaluate.call(this, test);
     };
 
     /**
      *
      * @method matchers.toMatchDatePart
-     * @param oDate {Date} Date to be compared
+     * @param expected {Date} Date to be compared
      * @param {String} part specific part/property of the date you want to be compared </br
      *        <br />
      *        <b>Currently supported parts are listed below :</b>
@@ -758,62 +797,66 @@ beforeEach(function () {
      *  e.g usages :expect(date).toMatchDatePart(date, 'day');
      * @beta
      */
-    matchers.toMatchDatePart = function (oDate, part) {
-        var cDate = this.actual,
-            msg,
-            result;
-        if (hlp.typeOf(cDate, 'Date') && hlp.typeOf(oDate, 'Date')) {
-            switch (part) {
+    matchers.toMatchDatePart = function () {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'date');
+            hlp.checkArgumentType(expected, 'object');
+            hlp.checkArgumentType(expected.date, 'date');
+            hlp.checkArgumentType(expected.part, 'string');
+            var result, msg;
+
+            switch (expected.part) {
             case 'date':
-                result = cDate.getDate() === oDate.getDate();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getDate()), hlp.dp(oDate.getDate()));
+                result = actual.getDate() === expected.date.getDate();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getDate()), hlp.dp(expected.date.getDate()));
                 break;
             case 'day':
-                result = cDate.getDay() === oDate.getDay();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getDay()), hlp.dp(oDate.getDay()));
+                result = actual.getDay() === expected.date.getDay();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getDay()), hlp.dp(expected.date.getDay()));
                 break;
             case 'month':
-                result = cDate.getMonth() === oDate.getMonth();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getMonth()), hlp.dp(oDate.getMonth()));
+                result = actual.getMonth() === expected.date.getMonth();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getMonth()), hlp.dp(expected.date.getMonth()));
                 break;
             case 'year':
-                result = cDate.getFullYear() === oDate.getFullYear();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getFullYear()), hlp.dp(oDate.getFullYear()));
+                result = actual.getFullYear() === expected.date.getFullYear();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getFullYear()), hlp.dp(expected.date.getFullYear()));
                 break;
             case 'milliseconds':
-                result = cDate.getMilliseconds() === oDate.getMilliseconds();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getMilliseconds()), hlp.dp(oDate.getMilliseconds()));
+                result = actual.getMilliseconds() === expected.date.getMilliseconds();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getMilliseconds()), hlp.dp(expected.date.getMilliseconds()));
                 break;
             case 'seconds':
-                result = cDate.getSeconds() === oDate.getSeconds();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getSeconds()), hlp.dp(oDate.getSeconds()));
+                result = actual.getSeconds() === expected.date.getSeconds();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getSeconds()), hlp.dp(expected.date.getSeconds()));
                 break;
             case 'minutes':
-                result = cDate.getMinutes() === oDate.getMinutes();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getMinutes()), hlp.dp(oDate.getMinutes()));
+                result = actual.getMinutes() === expected.date.getMinutes();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getMinutes()), hlp.dp(expected.date.getMinutes()));
                 break;
             case 'hours':
-                result = cDate.getHours() === oDate.getHours();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getHours()), hlp.dp(oDate.getHours()));
+                result = actual.getHours() === expected.date.getHours();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getHours()), hlp.dp(expected.date.getHours()));
                 break;
             case 'time':
-                result = cDate.getTime() === oDate.getTime();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(cDate.getTime()), hlp.dp(oDate.getTime()));
+                result = actual.getTime() === expected.date.getTime();
+                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getTime()), hlp.dp(expected.date.getTime()));
                 break;
             default:
-                msg = hlp.msg.date.nomatch.part.t(part);
+                msg = hlp.msg.date.nomatch.part.t(expected.part);
             }
 
-        } else {
-            msg = hlp.msg.date.invalidType.t(hlp.dp(cDate), hlp.dp(oDate));
-            result = false;
-        }
-        this.message = function () { return msg; };
-        return result;
+            return {
+                pass : isNot ? !result : result,
+                message : msg
+            };
+        };
+
+        return hlp.evaluate.call(this, test);
     };
 
     // aliases
-    this.addMatchers(matchers);
+    jasmine.addMatchers(matchers);
 
     // Keep a reference to the original matchers, for tests
     jasmine.__angular_jasmine_matchers__ = matchers;
