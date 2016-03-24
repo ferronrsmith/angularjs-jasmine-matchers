@@ -87,6 +87,10 @@ describe('Testing Custom Matchers', function () {
         expect([8, 1, 2, 5, 7, 8]).toBeArray();
     });
 
+    it("Expect array length to be 5", function () {
+        expect([8, 1, 2, 5, 7, 8]).toBeArrayOfSize(6);
+    });
+
     it('Expect object to be object', function () {
         expect({}).toBeObject();
     });
@@ -128,7 +132,9 @@ describe('Testing Custom Matchers', function () {
     });
 
     it('to be function', function () {
-        expect(function () { var a = clock; a(); }).toBeFunction();
+        expect(function () {
+            clock();
+        }).toBeFunction();
     });
 
     it('Expected Dates to match', function () {
@@ -142,6 +148,7 @@ describe('Testing Custom Matchers', function () {
         expect(date).toMatchDatePart(date, 'minutes');
         expect(date).toMatchDatePart(date, 'hours');
         expect(date).toMatchDatePart(date, 'time');
+        expect(date).toMatchDatePart(date, 'UTCDate');
     });
 });
 

@@ -256,7 +256,6 @@ beforeEach(function () {
         }(type));
     };
 
-
     String.prototype.t = function () {
         var args = arguments;
         return this.replace(/\{(\d+)\}/g, function (match, number) {
@@ -362,11 +361,14 @@ beforeEach(function () {
     };
 
     matchers.toEqualData = function () {
-        return {
-            compare: function (actual, expected) {
-                return { pass: angular.equals(actual, expected) };
-            }
+        var test = function (actual, isNot, expected) {
+            var result = angular.equals(actual, expected);
+            return {
+                pass: isNot ? !result : result,
+                message: "Expected " + hlp.dp(actual) + " data {0} to Equal ".t(isNot ? "not" : "") + expected
+            };
         };
+        return hlp.evaluate.call(this, test);
     };
 
     matchers.toHaveBeenCalledOnce = function () {
@@ -623,20 +625,6 @@ beforeEach(function () {
         return this.actual.is(':checked');
     };
 
-    customMatchers.toBeSameDate = function (date) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be equal to '".t(this.isNot ? "not" : "") + hlp.dp(date);
-        };
-
-        var actualDate = this.actual;
-        return actualDate.getDate() === date.getDate() &&
-            actualDate.getFullYear() === date.getFullYear() &&
-            actualDate.getMonth() === date.getMonth() &&
-            actualDate.getHours() === date.getHours() &&
-            actualDate.getMinutes() === date.getMinutes() &&
-            actualDate.getSeconds() === date.getSeconds();
-    };
-
     customMatchers.toBeEmpty = function () {
         this.message = function () {
             return "Expected '" + hlp.dp(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
@@ -770,28 +758,33 @@ beforeEach(function () {
     };
 
     matchers.toBeIso8601Date = function () {
-        return {
-            compare: function (actual) {
-                return {
-                    pass: hlp.isOfType(actual, 'String')
-                        && actual.length >= 10
-                        && new Date(actual).toString() !== 'Invalid Date'
-                        && new Date(actual).toISOString().slice(0, actual.length) === actual
-                };
-            }
+        var test = function (actual, isNot, expected) {
+            var result = hlp.isOfType(actual, 'String')
+                    && actual.length >= 10
+                    && new Date(actual).toString() !== 'Invalid Date'
+                    && new Date(actual).toISOString().slice(0, actual.length) === actual;
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected '" + hlp.dp(actual) + "' to " + (isNot ? " not" : "") + " be an Iso8601 date "
+            };
         };
+        return hlp.evaluate.call(this, test);
     };
 
     /**
      * Asserts subject is an Array with a defined number of members
-     * @param  {Number} size
-     * @return {Boolean}
      */
-    customMatchers.toBeArrayOfSize = function (size) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be an [Array] of size {1}".t(this.isNot ? "not" : "", size);
+    matchers.toBeArrayOfSize = function () {
+        var test = function (actual, isNot, size) {
+            hlp.checkArgumentType(actual, 'array');
+            hlp.checkArgumentType(size, 'number');
+            var result = hlp.isOfType(actual, 'array') && actual.length === size;
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected '" + hlp.dp(actual) + "' to {0} be an [Array] of size {1}".t(isNot ? "not" : "", size)
+            };
         };
-        return hlp.isOfType(this.actual, 'Array') && this.actual.length === size;
+        return hlp.evaluate.call(this, test);
     };
 
     /**
@@ -944,10 +937,13 @@ beforeEach(function () {
     /**
      *
      * @method matchers.toMatchDatePart
-     * @param expected {Date} Date to be compared
-     * @param {String} part specific part/property of the date you want to be compared </br
+     * Any date getter can be used as comparison </br
      *        <br />
-     *        <b>Currently supported parts are listed below :</b>
+     *        <b>Tested with:</b>
+     *        <b>
+     *          See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
+     *          for a full list of supported parts
+     *        </b>
      *        <ul>
      *            <li>date</li>
      *            <li>day</li>
