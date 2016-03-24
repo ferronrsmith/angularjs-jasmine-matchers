@@ -42,7 +42,7 @@ module.exports = function (grunt) {
         },
         watch: {
             files: '<%= meta.bin.lintFiles %>',
-            tasks: ['jslint', 'karma:stable', 'yuidoc', 'notify:watch']
+            tasks: ['jslint', 'karma', 'yuidoc', 'notify:watch']
         },
         notify: {
             watch: {

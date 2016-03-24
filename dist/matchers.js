@@ -2,6 +2,13 @@
  (c) Ferron Hanse 2012
  https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
  Released under the MIT license
+
+ Changelog
+
+ removed toBeNan - now apart of jasmine 2
+ deprecate toMatchRegex, use toMatch
+ remove toBeSameDate, use toMatchDatePart({date: date, part: 'time'}) instead)
+
  */
 
 
@@ -10,7 +17,7 @@
 /*jslint unparam : true */
 /*jslint browser : true */
 /*jslint bitwise : true*/
-/*global describe, beforeEach, inject, module, angular, document, it, expect, $, jasmine, toJson */
+/*global describe, beforeEach, inject, module, angular, document, it, expect, $, jasmine, toJson, jqLiteHasClass */
 
 /**
  Provides a comprehensive set of custom matchers for the Jasmine testing framework
@@ -22,28 +29,49 @@ beforeEach(function () {
     var customMatchers = {},
         matchers = {},
         hlp = {},
-        bjQuery = false;
+        bjQuery = false,
+        primitives = ['string', 'boolean', 'object', 'array', 'number', 'date', 'function'];
 
-    hlp.cssMatcher = function (presentClasses, absentClasses) {
-        var self = this;
+    hlp.cssMatcher = function cssMatcher(presentClasses, absentClasses) {
         return function () {
-            var element = angular.element(self.actual), present = true, absent = false;
+            return {
+                compare: function (actual) {
+                    var element = angular.element(actual),
+                        present = true,
+                        absent = false,
+                        message;
 
-            angular.forEach(presentClasses.split(' '), function (className) {
-                present = present && element.hasClass(className);
-            });
+                    angular.forEach(presentClasses.split(' '), function (className) {
+                        present = present && element.hasClass(className);
+                    });
 
-            angular.forEach(absentClasses.split(' '), function (className) {
-                absent = absent || element.hasClass(className);
-            });
+                    angular.forEach(absentClasses.split(' '), function (className) {
+                        absent = absent || element.hasClass(className);
+                    });
 
-            self.message = function () {
-                return "Expected to {0} have ".t(this.isNot ? "not" : "") + presentClasses +
-                    (absentClasses ? (" and not have " + absentClasses + " ") : "") +
-                    " but had " + element[0].className + ".";
+                    message = function () {
+                        return "Expected to have " + presentClasses +
+                            (absentClasses ? (" and not have " + absentClasses + " ") : "") +
+                            "but had " + element[0].className + ".";
+                    };
+                    return {
+                        pass: present && !absent,
+                        message: message
+                    };
+                }
             };
-            return present && !absent;
         };
+    };
+
+    hlp.isNgElementHidden = function (element) {
+        // we need to check element.getAttribute for SVG nodes
+        var hidden = true;
+        angular.forEach(angular.element(element), function (element) {
+            if ((' '  + (element.getAttribute('class') || '') + ' ').indexOf(' ng-hide ') === -1) {
+                hidden = false;
+            }
+        });
+        return hidden;
     };
 
     /**
@@ -83,6 +111,10 @@ beforeEach(function () {
      */
     hlp.typeOf = function (actual) {
         return Object.prototype.toString.call(actual).replace(/(\[|object|\s|\])/g, "").toLowerCase();
+    };
+
+    hlp.toCamelCase = function (actual) {
+        return actual.charAt(0).toUpperCase() + actual.substring(1);
     };
 
     /**
@@ -132,6 +164,10 @@ beforeEach(function () {
             arr.push(value);
         });
         return arr;
+    };
+
+    hlp.isPromiseLike = function (obj) {
+        return obj && hlp.isOfType(obj.then, 'function');
     };
 
     /**
@@ -199,12 +235,37 @@ beforeEach(function () {
         }
     };
 
+    hlp.checkArgumentCount = function (args, count) {
+        var result = args.length === count;
+        if (!result) {
+            throw new Error("Invalid number of arguments");
+        }
+    };
+
+    // type checking toBe wrapper
+    hlp.toBeType = function (type) {
+        return (function (t) {
+            var test = function (actual, isNot) {
+                var result = hlp.isOfType(actual, t);
+                return {
+                    pass : isNot ? !result : result,
+                    message : "Expected '" + hlp.dp(actual) + "' to " + (isNot ? " not" : "") + " be " + t
+                };
+            };
+            return hlp.evaluate.call(this, test);
+        }(type));
+    };
+
 
     String.prototype.t = function () {
         var args = arguments;
         return this.replace(/\{(\d+)\}/g, function (match, number) {
             return args[number] !== 'undefined' ? args[number] : match;
         });
+    };
+
+    String.prototype.toCamelCase = function () {
+        return hlp.toCamelCase(this);
     };
 
     /**
@@ -215,26 +276,267 @@ beforeEach(function () {
         return (window.$ !== undefined || window.jQuery !== undefined);
     }());
 
-    customMatchers.toBeInvalid = hlp.cssMatcher('ng-invalid', 'ng-valid');
-    customMatchers.toBeValid = hlp.cssMatcher('ng-valid', 'ng-invalid');
-    customMatchers.toBeDirty = hlp.cssMatcher('ng-dirty', 'ng-pristine');
-    customMatchers.toBePristine = hlp.cssMatcher('ng-pristine', 'ng-dirty');
-    customMatchers.toEqual = function (expected) {
-        if (this.actual && this.actual.$$log) {
-            if (typeof expected === 'string') {
-                this.actual = this.actual.toString();
-            } else {
-                this.actual = this.actual.toArray();
-            }
+
+    // primitive match generator
+    angular.forEach(primitives, function (item) {
+        matchers['toBe' + item.toCamelCase()] = function () {
+            return hlp.toBeType(item);
+        };
+    });
+
+    matchers.toBeEmpty = hlp.cssMatcher('ng-empty', 'ng-not-empty');
+    matchers.toBeNotEmpty = hlp.cssMatcher('ng-not-empty', 'ng-empty');
+    matchers.toBeInvalid = hlp.cssMatcher('ng-invalid', 'ng-valid');
+    matchers.toBeValid = hlp.cssMatcher('ng-valid', 'ng-invalid');
+    matchers.toBeDirty = hlp.cssMatcher('ng-dirty', 'ng-pristine');
+    matchers.toBePristine = hlp.cssMatcher('ng-pristine', 'ng-dirty');
+    matchers.toBeUntouched = hlp.cssMatcher('ng-untouched', 'ng-touched');
+    matchers.toBeTouched = hlp.cssMatcher('ng-touched', 'ng-untouched');
+
+    matchers.toBeAPromise = function () {
+        function generateCompare(isNot) {
+            return function (actual) {
+                return { pass: hlp.isPromiseLike(actual), message: "Expected object " + (isNot ? "not " : "") + "to be a promise" };
+            };
         }
-        return jasmine.Matchers.prototype.toEqual.call(this, expected);
+
+        return {
+            compare: generateCompare(false),
+            negativeCompare: generateCompare(true)
+        };
     };
 
-    customMatchers.toEqualData = function (expected) {
-        this.message = function () {
-            return "Expected " + hlp.dp(this.actual) + " data {0} to Equal ".t(this.isNot ? "not" : "") + expected;
+    matchers.toBeShown = function () {
+        function generateCompare(isNot) {
+            return function (actual) {
+                var pass = !hlp.isNgElementHidden(actual);
+                if (isNot) {
+                    pass = !pass;
+                }
+                return { pass: pass, message: "Expected element " + (isNot ? "" : "not ") + "to have 'ng-hide' class" };
+            };
+        }
+        return {
+            compare: generateCompare(false),
+            negativeCompare: generateCompare(true)
         };
-        return angular.equals(this.actual, expected);
+    };
+
+    matchers.toBeHidden = function () {
+        function generateCompare(isNot) {
+            return function (actual) {
+                var pass = hlp.isNgElementHidden(actual);
+                if (isNot) {
+                    pass = !pass;
+                }
+                return { pass: pass, message: "Expected element " + (isNot ? "" : "not ") + "to have 'ng-hide' class" };
+            };
+        }
+        return {
+            compare: generateCompare(false),
+            negativeCompare: generateCompare(true)
+        };
+    };
+
+    matchers.toEqual = function (util) {
+        /**
+         * @return {boolean}
+         */
+        function DOMTester(a, b) {
+            if (a && b && a.nodeType > 0 && b.nodeType > 0) {
+                return a === b;
+            }
+        }
+        return {
+            compare: function (actual, expected) {
+                if (actual && actual.$$log) {
+                    actual = (typeof expected === 'string')
+                        ? actual.toString()
+                        : actual.toArray();
+                }
+                return {
+                    pass: util.equals(actual, expected, [DOMTester])
+                };
+            }
+        };
+    };
+
+    matchers.toEqualData = function () {
+        return {
+            compare: function (actual, expected) {
+                return { pass: angular.equals(actual, expected) };
+            }
+        };
+    };
+
+    matchers.toHaveBeenCalledOnce = function () {
+        return {
+            compare: function (actual) {
+                if (arguments.length > 1) {
+                    throw new Error('toHaveBeenCalledOnce does not take arguments, use toHaveBeenCalledWith');
+                }
+
+                if (!jasmine.isSpy(actual)) {
+                    throw new Error('Expected a spy, but got ' + jasmine.pp(actual) + '.');
+                }
+
+                var message = function () {
+                    var msg = 'Expected spy ' + actual.identity() + ' to have been called once, but was ',
+                        count = this.actual.calls.count();
+                    return [
+                        count === 0 ? msg + 'never called.' :
+                                msg + 'called ' + count + ' times.',
+                        msg.replace('to have', 'not to have') + 'called once.'
+                    ];
+                };
+
+                return {
+                    pass: actual.calls.count() === 1,
+                    message: message
+                };
+            }
+        };
+    };
+
+    matchers.toHaveBeenCalledOnceWith = function (util, customEqualityTesters) {
+        return {
+            compare: function (actual) {
+                var expectedArgs = Array.prototype.slice.call(arguments, 1), message;
+                if (!jasmine.isSpy(actual)) {
+                    throw new Error('Expected a spy, but got ' + jasmine.pp(actual) + '.');
+                }
+                message = function () {
+                    var result;
+                    if (actual.calls.count() !== 1) {
+                        if (actual.calls.count() === 0) {
+                            result = [
+                                'Expected spy ' + actual.identity() + ' to have been called once with ' +
+                                    jasmine.pp(expectedArgs) + ' but it was never called.',
+                                'Expected spy ' + actual.identity() + ' not to have been called with ' +
+                                    jasmine.pp(expectedArgs) + ' but it was.'
+                            ];
+                        }
+
+                        result = [
+                            'Expected spy ' + actual.identity() + ' to have been called once with ' +
+                                jasmine.pp(expectedArgs) + ' but it was called ' + actual.calls.count() + ' times.',
+                            'Expected spy ' + actual.identity() + ' not to have been called once with ' +
+                                jasmine.pp(expectedArgs) + ' but it was.'
+                        ];
+                    } else {
+                        result = [
+                            'Expected spy ' + actual.identity() + ' to have been called once with ' +
+                                jasmine.pp(expectedArgs) + ' but was called with ' + jasmine.pp(actual.calls.argsFor(0)),
+                            'Expected spy ' + actual.identity() + ' not to have been called once with ' +
+                                jasmine.pp(expectedArgs) + ' but was called with ' + jasmine.pp(actual.calls.argsFor(0))
+                        ];
+                    }
+                    return result;
+                };
+                return {
+                    pass: actual.calls.count() === 1 && util.equals(actual.calls.argsFor(0), expectedArgs),
+                    message: message
+                };
+            }
+        };
+    };
+
+    matchers.toBeOneOf = function () {
+        return {
+            compare: function (actual) {
+                var expectedArgs = Array.prototype.slice.call(arguments, 1);
+                return { pass: expectedArgs.indexOf(actual) !== -1 };
+            }
+        };
+    };
+
+    matchers.toHaveClass = function () {
+        function generateCompare(isNot) {
+            return function (actual, clazz) {
+                var classes = clazz.trim().split(/\s+/), i;
+                for (i = 0; i < classes.length; i += 1) {
+                    if (!angular.element(actual[0]).hasClass(classes[i])) {
+                        return { pass: isNot };
+                    }
+                }
+                return { pass: !isNot };
+            };
+        }
+
+        return {
+            compare: generateCompare(false),
+            negativeCompare: generateCompare(true)
+        };
+    };
+
+    matchers.toThrowMinErr = function () {
+        function generateCompare(isNot) {
+            return function (actual, namespace, code, content) {
+                var result,
+                    exception,
+                    message,
+                    output,
+                    exceptionMessage = '',
+                    escapeRegexp = function (str) {
+                        // This function escapes all special regex characters.
+                        // We use it to create matching regex from arbitrary strings.
+                        // http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+                        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+                    },
+                    codeRegex = new RegExp('^\\[' + escapeRegexp(namespace) + ':' + escapeRegexp(code) + '\\]'),
+                    not = isNot ? "not " : "",
+                    regex = jasmine.isA_("RegExp", content) ? content :
+                            angular.isDefined(content) ? new RegExp(escapeRegexp(content)) : undefined;
+
+                if (!angular.isFunction(actual)) {
+                    throw new Error('Actual is not a function');
+                }
+
+                try {
+                    actual();
+                } catch (e) {
+                    exception = e;
+                }
+
+                if (exception) {
+                    exceptionMessage = exception.message || exception;
+                }
+
+                message = function () {
+                    return "Expected function " + not + "to throw " +
+                        namespace + "MinErr('" + code + "')" +
+                        (regex ? " matching " + regex.toString() : "") +
+                        (exception ? ", but it threw " + exceptionMessage : ".");
+                };
+
+                result = codeRegex.test(exceptionMessage);
+                if (!result) {
+                    if (isNot) {
+                        output = { pass: !result, message: message };
+                    } else {
+                        output = { pass: result, message: message };
+                    }
+                }
+
+                if (angular.isDefined(regex)) {
+                    if (isNot) {
+                        output = { pass: !regex.test(exceptionMessage), message: message };
+                    } else {
+                        output = { pass: regex.test(exceptionMessage), message: message };
+                    }
+                }
+                if (isNot) {
+                    output = { pass: !result, message: message };
+                } else {
+                    output = { pass: result, message: message };
+                }
+                return output;
+            };
+        }
+        return {
+            compare: generateCompare(false),
+            negativeCompare: generateCompare(true)
+        };
     };
 
     customMatchers.toEqualError = function (message) {
@@ -261,80 +563,6 @@ beforeEach(function () {
             return "Expected " + expected + " to {0} match an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(messageRegexp);
         };
         return this.actual.name === 'Error' && messageRegexp.test(this.actual.message);
-    };
-
-    customMatchers.toHaveBeenCalledOnce = function () {
-        if (arguments.length > 0) {
-            throw new Error('toHaveBeenCalledOnce does not take arguments, use toHaveBeenCalledWith');
-        }
-
-        if (!jasmine.isSpy(this.actual)) {
-            throw new Error('Expected a spy, but got ' + jasmine.pp(this.actual) + '.');
-        }
-
-        this.message = function () {
-            var msg = 'Expected spy ' + this.actual.identity + ' to have been called once, but was ',
-                count = this.actual.callCount;
-            return [
-                count === 0 ? msg + 'never called.' : msg + 'called ' + count + ' times.',
-                msg.replace('to have', 'not to have') + 'called once.'
-            ];
-        };
-
-        return this.actual.callCount === 1;
-    };
-
-    customMatchers.toHaveBeenCalledOnceWith = function () {
-        var expectedArgs = jasmine.util.argsToArray(arguments);
-
-        if (!jasmine.isSpy(this.actual)) {
-            throw new Error('Expected a spy, but got ' + jasmine.pp(this.actual) + '.');
-        }
-
-        this.message = function () {
-            var result;
-            if (this.actual.callCount !== 1) {
-                if (this.actual.callCount === 0) {
-                    result = [
-                        'Expected spy ' + this.actual.identity + ' to have been called with ' +
-                            jasmine.pp(expectedArgs) + ' but it was never called.',
-                        'Expected spy ' + this.actual.identity + ' not to have been called with ' +
-                            jasmine.pp(expectedArgs) + ' but it was.'
-                    ];
-                } else {
-                    result = [
-                        'Expected spy ' + this.actual.identity + ' to have been called with ' +
-                            jasmine.pp(expectedArgs) + ' but it was never called.',
-                        'Expected spy ' + this.actual.identity + ' not to have been called with ' +
-                            jasmine.pp(expectedArgs) + ' but it was.'
-                    ];
-                }
-            } else {
-                result = [
-                    'Expected spy ' + this.actual.identity + ' to have been called with ' +
-                        jasmine.pp(expectedArgs) + ' but was called with ' + jasmine.pp(this.actual.argsForCall),
-                    'Expected spy ' + this.actual.identity + ' not to have been called with ' +
-                        jasmine.pp(expectedArgs) + ' but was called with ' + jasmine.pp(this.actual.argsForCall)
-                ];
-            }
-            return result;
-        };
-
-        return this.actual.callCount === 1 && this.env.contains_(this.actual.argsForCall, expectedArgs);
-    };
-
-    customMatchers.toBeOneOf = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be one of '".t(this.isNot ? "not" : "") + hlp.dp(arguments) + "'.";
-        };
-        return hlp.indexOf(arguments, this.actual) !== -1;
-    };
-
-    customMatchers.toHaveClass = function (clazz) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have class '".t(this.isNot ? "not" : "") + clazz + "'.";
-        };
-        return this.actual.hasClass ? this.actual.hasClass(clazz) : angular.element(this.actual).hasClass(clazz);
     };
 
     customMatchers.toHaveCss = function (css) {
@@ -510,55 +738,35 @@ beforeEach(function () {
     };
 
     /**
-     * Does not return true if subject is null
-     * @return {Boolean}
+     * date before
      */
-    customMatchers.toBeObject = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be an [Object]".t(this.isNot ? "not" : "");
+    matchers.toBeBefore = function () {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'date');
+            hlp.checkArgumentType(expected, 'date');
+            var result = actual.getTime() < expected.getTime();
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected '" + hlp.dp(actual) + "' to " + (isNot ? " not" : "") + " be before " + hlp.dp(expected)
+            };
         };
-        return hlp.isOfType(this.actual, 'Object');
-    };
-
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeArray = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be an [Array]".t(this.isNot ? "not" : "");
-        };
-        return hlp.isOfType(this.actual, 'Array');
+        return hlp.evaluate.call(this, test);
     };
 
     /**
-     * @return {Boolean}
+     * date after
      */
-    customMatchers.toBeDate = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be a [Date]".t(this.isNot ? "not" : "");
+    matchers.toBeAfter = function (date) {
+        var test = function (actual, isNot, expected) {
+            hlp.checkArgumentType(actual, 'date');
+            hlp.checkArgumentType(expected, 'date');
+            var result = actual.getTime() > expected.getTime();
+            return {
+                pass : isNot ? !result : result,
+                message : "Expected '" + hlp.dp(actual) + "' to " + (isNot ? " not" : "") + " be after " + hlp.dp(expected)
+            };
         };
-        return hlp.isOfType(this.actual, 'Date');
-    };
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeBefore = function (date) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be before".t(this.isNot ? "not" : "") + hlp.dp(date);
-        };
-        return hlp.isOfType(this.actual, 'Date') && this.actual.getTime() < date.getTime();
-    };
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeAfter = function (date) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be after".t(this.isNot ? "not" : "") + hlp.dp(date);
-        };
-        return hlp.isOfType(this.actual, 'Date') && this.actual.getTime() > date.getTime();
+        return hlp.evaluate.call(this, test);
     };
 
     matchers.toBeIso8601Date = function () {
@@ -585,27 +793,6 @@ beforeEach(function () {
         };
         return hlp.isOfType(this.actual, 'Array') && this.actual.length === size;
     };
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeString = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be a [String]".t(this.isNot ? "not" : "");
-        };
-        return hlp.isOfType(this.actual, 'String');
-    };
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeBoolean = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be Boolean".t(this.isNot ? "not" : "");
-        };
-        return hlp.isOfType(this.actual, 'Boolean');
-    };
-
 
     /**
      * @return {Boolean}
@@ -665,28 +852,6 @@ beforeEach(function () {
         return hlp.evaluate.call(this, test);
     };
 
-    matchers.toBeNaN = function () {
-        var test = function (actual, isNot) {
-            var result = isNaN(actual);
-            return {
-                pass : isNot ? !result : result,
-                message : "Expected '" + hlp.dp(actual) + "' to" + (isNot ? " not" : "") + " be a [NaN]"
-            };
-        };
-
-        return hlp.evaluate.call(this, test);
-    };
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeFunction = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + " be a [Function]";
-        };
-        return hlp.isOfType(this.actual, 'Function');
-    };
-
     matchers.toHaveLength = function () {
         var test = function (actual, isNot, expected) {
             hlp.checkArgumentType(actual, 'string');
@@ -740,7 +905,7 @@ beforeEach(function () {
             }
             return {
                 pass : isNot ? !result : result,
-                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " to contain only one " + expected
+                message : "Expected " + hlp.dp(actual) + " to " + (isNot ? " not" : "") + " contain " + expected + " only once"
             };
         };
 
@@ -798,61 +963,26 @@ beforeEach(function () {
      * @beta
      */
     matchers.toMatchDatePart = function () {
-        var test = function (actual, isNot, expected) {
-            hlp.checkArgumentType(actual, 'date');
-            hlp.checkArgumentType(expected, 'object');
-            hlp.checkArgumentType(expected.date, 'date');
-            hlp.checkArgumentType(expected.part, 'string');
-            var result, msg;
-
-            switch (expected.part) {
-            case 'date':
-                result = actual.getDate() === expected.date.getDate();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getDate()), hlp.dp(expected.date.getDate()));
-                break;
-            case 'day':
-                result = actual.getDay() === expected.date.getDay();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getDay()), hlp.dp(expected.date.getDay()));
-                break;
-            case 'month':
-                result = actual.getMonth() === expected.date.getMonth();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getMonth()), hlp.dp(expected.date.getMonth()));
-                break;
-            case 'year':
-                result = actual.getFullYear() === expected.date.getFullYear();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getFullYear()), hlp.dp(expected.date.getFullYear()));
-                break;
-            case 'milliseconds':
-                result = actual.getMilliseconds() === expected.date.getMilliseconds();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getMilliseconds()), hlp.dp(expected.date.getMilliseconds()));
-                break;
-            case 'seconds':
-                result = actual.getSeconds() === expected.date.getSeconds();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getSeconds()), hlp.dp(expected.date.getSeconds()));
-                break;
-            case 'minutes':
-                result = actual.getMinutes() === expected.date.getMinutes();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getMinutes()), hlp.dp(expected.date.getMinutes()));
-                break;
-            case 'hours':
-                result = actual.getHours() === expected.date.getHours();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getHours()), hlp.dp(expected.date.getHours()));
-                break;
-            case 'time':
-                result = actual.getTime() === expected.date.getTime();
-                msg = hlp.msg.date.nomatch.Date.t(hlp.dp(actual.getTime()), hlp.dp(expected.date.getTime()));
-                break;
-            default:
-                msg = hlp.msg.date.nomatch.part.t(expected.part);
+        return {
+            compare : function (actual) {
+                var expectedArgs = Array.prototype.slice.call(arguments, 1), date, part, dateFn, actualDateFn;
+                hlp.checkArgumentCount(expectedArgs, 2);
+                date = expectedArgs[0];
+                part = expectedArgs[1];
+                hlp.checkArgumentType(actual, 'date');
+                hlp.checkArgumentType(date, 'date');
+                hlp.checkArgumentType(part, 'string');
+                dateFn = date['get' + part.toCamelCase()];
+                actualDateFn = actual['get' + part.toCamelCase()];
+                hlp.checkArgumentType(dateFn, 'function');
+                hlp.checkArgumentType(actualDateFn, 'function');
+                return {
+                    pass: actual['get' + part.toCamelCase()]() === date['get' + part.toCamelCase()](),
+                    message : hlp.msg.date.nomatch.Date.t(hlp.dp(actual['get' + part.toCamelCase()]()),
+                        hlp.dp(date['get' + part.toCamelCase()]()))
+                };
             }
-
-            return {
-                pass : isNot ? !result : result,
-                message : msg
-            };
         };
-
-        return hlp.evaluate.call(this, test);
     };
 
     // aliases

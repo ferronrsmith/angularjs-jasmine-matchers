@@ -7,13 +7,15 @@
 describe('Testing Custom Matchers', function () {
     "use strict";
 
-    xit('Expect all values in an array to be unique', function () {
-        expect([1, 2, 3, 5]).toBeUniqueArray();
+    var clock;
+
+    beforeEach(function () {
+        clock = angular.mock.$mockDate();
     });
 
-    xit('Expect the dates to be the same', function () {
+    it('Expect the dates to be the same', function () {
         var date = new Date();
-        expect(date).toBeSameDate(date);
+        expect(date).toMatchDatePart(date, 'time');
     });
 
     it('Expect number to be even ', function () {
@@ -65,10 +67,6 @@ describe('Testing Custom Matchers', function () {
         expect("elements elemental").not.toContainOnce("element");
     });
 
-    it('Expect to be NaN ', function () {
-        expect('assass').toBeNaN();
-    });
-
     it('Expect date to be in ISO8601 Date Format', function () {
         expect(new Date().toISOString()).toBeIso8601Date();
     });
@@ -85,21 +83,65 @@ describe('Testing Custom Matchers', function () {
         expect([8, 1, 2, 5, 7, 8]).not.toBeUniqueArray();
     });
 
-    xit('Expect not to work properly', function () {
+    it("Expect value to be an array", function () {
+        expect([8, 1, 2, 5, 7, 8]).toBeArray();
+    });
+
+    it('Expect object to be object', function () {
         expect({}).toBeObject();
+    });
+
+    it('Expect value to not be array', function () {
+        expect({}).not.toBeArray();
+    });
+
+    it('Expect string to not be object', function () {
+        expect("").not.toBeObject();
+    });
+
+    it('Expect date', function () {
+        expect(new Date()).toBeDate();
+    });
+
+    it('Expect date to appear before the other', function () {
+        var dt1 = new Date(), dt2;
+        clock.tick(1);
+        dt2 = new Date();
+        expect(dt1).toBeBefore(dt2);
+    });
+
+    it('Expect date to appear after the other', function () {
+        var dt1 = new Date(), dt2;
+        clock.tick(1);
+        dt2 = new Date();
+        expect(dt2).toBeAfter(dt1);
+    });
+
+    it('should have toHaveClass matcher', function () {
+        var e = angular.element('<div class="abc">');
+        expect(e).not.toHaveClass('none');
+        expect(e).toHaveClass('abc');
+    });
+
+    it('to be in', function () {
+        expect(2).toBeOneOf(1, 2, 3);
+    });
+
+    it('to be function', function () {
+        expect(function () { var a = clock; a(); }).toBeFunction();
     });
 
     it('Expected Dates to match', function () {
         var date = new Date();
-        expect(date).toMatchDatePart({ date : date, part : 'day'});
-        expect(date).toMatchDatePart({ date : date, part : 'date'});
-        expect(date).toMatchDatePart({ date : date, part : 'month'});
-        expect(date).toMatchDatePart({ date : date, part : 'year'});
-        expect(date).toMatchDatePart({ date : date, part : 'milliseconds'});
-        expect(date).toMatchDatePart({ date : date, part : 'seconds'});
-        expect(date).toMatchDatePart({ date : date, part : 'minutes'});
-        expect(date).toMatchDatePart({ date : date, part : 'hours'});
-        expect(date).toMatchDatePart({ date : date, part : 'time'});
+        expect(date).toMatchDatePart(date, 'day');
+        expect(date).toMatchDatePart(date, 'date');
+        expect(date).toMatchDatePart(date, 'month');
+        expect(date).toMatchDatePart(date, 'year');
+        expect(date).toMatchDatePart(date, 'milliseconds');
+        expect(date).toMatchDatePart(date, 'seconds');
+        expect(date).toMatchDatePart(date, 'minutes');
+        expect(date).toMatchDatePart(date, 'hours');
+        expect(date).toMatchDatePart(date, 'time');
     });
 });
 
