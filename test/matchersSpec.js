@@ -1,4 +1,4 @@
-/*global jasmine, describe, xdescribe, it, expect, afterEach, beforeEach, angular, xit */
+/*global jasmine, describe, xdescribe, it, expect, afterEach, beforeEach, angular, xit, inject, console, $ */
 /**
  * Created by ferron on 9/28/13.
  */
@@ -125,6 +125,41 @@ describe('Testing Custom Matchers', function () {
         var e = angular.element('<div class="abc">');
         expect(e).not.toHaveClass('none');
         expect(e).toHaveClass('abc');
+    });
+
+    it('Expect element to have value', function () {
+        var e = angular.element('<input type="text" value="some text">');
+        expect(e).toHaveVal("some text");
+    });
+
+    it('Expect element to have html', function () {
+        var e = angular.element('<div class="demo-box">Demonstration Box</div>');
+        expect(e).toHaveText("Demonstration Box");
+    });
+
+    it('Expect element to have prop', function () {
+        var e = angular.element('<input id="check1" type="checkbox" checked="checked">');
+        expect(e).toHaveProp("checked", true);
+    });
+
+    it('Expect element to have attr', function () {
+        var e = angular.element('<input id="check1" type="checkbox" checked="checked">');
+        expect(e).toHaveAttr("checked", 'checked');
+    });
+
+    it('Expect element to have css', function () {
+        var e = angular.element('<div style="background-color:blue;"></div>');
+        expect(e).toHaveCss("background-color", 'blue');
+    });
+
+    it('Expect element to be disabled', function () {
+        var e = angular.element('<input name="email" disabled="disabled">');
+        expect(e).toHaveIs(":disabled", true);
+    });
+
+    it('Expect element to not be disabled', function () {
+        var e = angular.element('<input name="email">');
+        expect(e).toHaveIs(":disabled", false);
     });
 
     it('to be in', function () {

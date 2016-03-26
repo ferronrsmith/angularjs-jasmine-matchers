@@ -1,13 +1,22 @@
 /*
- (c) Ferron Hanse 2012
+ (c) Ferron Hanse 2016
  https://github.com/ferronrsmith/anuglarjs-jasmine-matchers
  Released under the MIT license
 
  Changelog
 
  removed toBeNan - now apart of jasmine 2
- deprecate toMatchRegex, use toMatch
+ deprecated toMatchRegex, use toMatch
  remove toBeSameDate, use toMatchDatePart({date: date, part: 'time'}) instead)
+ remove toHaveId, use toHaveAttr('id', id)
+ remove toBeDisabled, use toHaveIs(':disabled', true)
+ remove toBeChecked, use toHaveIs(':checked', true)
+ remove toBeEmpty, use toHaveIs(':empty', true)
+ remove toBeHidden, use toHaveIs(':hidden', true)
+ remove toBeVisible, use toHaveIs(':visible', true)
+ remove toBeSelected, use toHaveIs(':selected', true)
+ remove toBeNonEmptyString
+ remove toHaveData
 
  */
 
@@ -26,11 +35,21 @@
  **/
 beforeEach(function () {
     "use strict";
-    var customMatchers = {},
-        matchers = {},
+    var matchers = {},
         hlp = {},
         bjQuery = false,
-        primitives = ['string', 'boolean', 'object', 'array', 'number', 'date', 'function'];
+        primitives = ['string', 'boolean', 'object', 'array', 'number', 'date', 'function'],
+        types = ['val', 'text'],
+        argTypes = ['attr', 'prop', 'is', 'css'];
+
+    /**
+     * Check if jQuery is present
+     * @return {boolean} boolean indicating if jQuery is present
+     */
+    bjQuery = (function () {
+        return (window.$ !== undefined || window.jQuery !== undefined);
+    }());
+
 
     hlp.cssMatcher = function cssMatcher(presentClasses, absentClasses) {
         return function () {
@@ -242,6 +261,12 @@ beforeEach(function () {
         }
     };
 
+    hlp.checkJQuery = function () {
+        if (!bjQuery) {
+            throw new Error("JQuery not detected");
+        }
+    };
+
     // type checking toBe wrapper
     hlp.toBeType = function (type) {
         return (function (t) {
@@ -256,6 +281,43 @@ beforeEach(function () {
         }(type));
     };
 
+    hlp.toHave = function (type) {
+        return (function (t) {
+            var test = function (actual, isNot, expected) {
+                hlp.checkArgumentType(actual, 'object');
+                hlp.checkArgumentType(expected, 'string');
+                var result = actual[type]() === expected;
+                return {
+                    pass : isNot ? !result : result,
+                    message : "Expected " + hlp.dp(actual[type]()) + " to " + (isNot ? " not" : "") + " to have " + type + " " + expected
+                };
+            };
+            return hlp.evaluate.call(this, test);
+        }(type));
+    };
+
+    hlp.toHaveArgs = function (type) {
+        return (function (t) {
+            return {
+                compare : function (actual) {
+                    var expectedArgs = Array.prototype.slice.call(arguments, 1), expected, prop, result;
+                    hlp.checkArgumentCount(expectedArgs, 2);
+                    prop = expectedArgs[0];
+                    expected = expectedArgs[1];
+                    hlp.checkArgumentType(prop, 'string');
+                    if (t === 'is') {
+                        hlp.checkJQuery();
+                    }
+                    result = actual[t](prop) === expected;
+                    return {
+                        pass : result,
+                        message : "Expected [" + hlp.dp(t) + "] to be " + actual[t](prop)
+                    };
+                }
+            };
+        }(type));
+    };
+
     String.prototype.t = function () {
         var args = arguments;
         return this.replace(/\{(\d+)\}/g, function (match, number) {
@@ -267,19 +329,22 @@ beforeEach(function () {
         return hlp.toCamelCase(this);
     };
 
-    /**
-     * Check if jQuery is present
-     * @return {boolean} boolean indicating if jQuery is present
-     */
-    bjQuery = (function () {
-        return (window.$ !== undefined || window.jQuery !== undefined);
-    }());
-
-
     // primitive match generator
     angular.forEach(primitives, function (item) {
         matchers['toBe' + item.toCamelCase()] = function () {
             return hlp.toBeType(item);
+        };
+    });
+
+    angular.forEach(types, function (item) {
+        matchers['toHave' + item.toCamelCase()] = function () {
+            return hlp.toHave(item);
+        };
+    });
+
+    angular.forEach(argTypes, function (item) {
+        matchers['toHave' + item.toCamelCase()] = function () {
+            return hlp.toHaveArgs(item);
         };
     });
 
@@ -541,188 +606,39 @@ beforeEach(function () {
         };
     };
 
-    customMatchers.toEqualError = function (message) {
-        this.message = function () {
-            var expected;
-            if (this.actual.message && this.actual.name === 'Error') {
-                expected = angular.toJson(this.actual.message);
-            } else {
-                expected = angular.toJson(this.actual);
-            }
-            return "Expected " + expected + " to {0} be an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(message);
-        };
-        return this.actual.name === 'Error' && this.actual.message === message;
-    };
-
-    customMatchers.toMatchError = function (messageRegexp) {
-        this.message = function () {
-            var expected;
-            if (this.actual.message && this.actual.name === 'Error') {
-                expected = angular.toJson(this.actual.message);
-            } else {
-                expected = angular.toJson(this.actual);
-            }
-            return "Expected " + expected + " to {0} match an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(messageRegexp);
-        };
-        return this.actual.name === 'Error' && messageRegexp.test(this.actual.message);
-    };
-
-    customMatchers.toHaveCss = function (css) {
-        var prop; // css prop
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have css '".t(this.isNot ? "not" : "") + hlp.dp(css) + "'.";
-        };
-        for (prop in css) {
-            if (css.hasOwnProperty(prop)) {
-                if (this.actual.css(prop) !== css[prop]) {
-                    return false;
+    matchers.toEqualError = function (message) {
+        return {
+            compare : function (actual, message) {
+                var expected;
+                if (actual.message && actual.name === 'Error') {
+                    expected = angular.toJson(actual.message);
+                } else {
+                    expected = angular.toJson(actual);
                 }
+                return {
+                    pass: actual.name === 'Error' && actual.message === message,
+                    message : "Expected " + expected + " to {0} be an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(message)
+                };
             }
-        }
-        return true;
-    };
-
-    customMatchers.toMatchRegex = function (regex) {
-
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} match '".t(this.isNot ? "not" : "") + regex;
         };
 
-        var reg;
-        if (hlp.isOfType(regex, "String")) {
-            reg = new RegExp(regex);
-        } else if (hlp.isOfType(regex, "RegExp")) {
-            reg = regex;
-        }
-        return reg.test(this.actual);
     };
 
-    customMatchers.toBeVisible = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be visible '".t(this.isNot ? "not" : "");
-        };
-        return this.actual.is(':visible');
-    };
-
-    customMatchers.toBeHidden = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be hidden '".t(this.isNot ? "not" : "");
-        };
-        return this.actual.is(':hidden');
-    };
-
-    customMatchers.toBeSelected = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be selected '".t(this.isNot ? "not" : "");
-        };
-        return this.actual.is(':selected');
-    };
-
-    customMatchers.toBeChecked = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be checked '".t(this.isNot ? "not" : "");
-        };
-        return this.actual.is(':checked');
-    };
-
-    customMatchers.toBeEmpty = function () {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
-        };
-        return this.actual.is(':empty');
-    };
-
-    customMatchers.toBeEmptyString = function () {
-        this.message = function () {
-            return "Expected string '" + hlp.dp(this.actual) + "' to {0} be empty '".t(this.isNot ? "not" : "");
-        };
-        return hlp.isOfType(this.actual, 'String') && $.trim(this.actual).length === 0;
-    };
-
-    customMatchers.toExist = function () {
-        this.message = function () {
-            var msg = "";
-            if (bjQuery) {
-                msg = "Expected '" + hlp.dp(this.actual) + "' to {0} exists '".t(this.isNot ? "not" : "");
-            } else {
-                msg = hlp.msg.jQuery;
+    matchers.toMatchError = function () {
+        return {
+            compare : function (actual, messageRegexp) {
+                var expected;
+                if (actual.message && actual.name === 'Error') {
+                    expected = angular.toJson(actual.message);
+                } else {
+                    expected = angular.toJson(actual);
+                }
+                return {
+                    pass: actual.name === 'Error' && messageRegexp.test(actual.message),
+                    message : "Expected " + expected + " to {0} match an Error with message ".t(this.isNot ? "not" : "") + angular.toJson(messageRegexp)
+                };
             }
-            return msg;
         };
-        return bjQuery ? $(document).find(this.actual).length : false;
-    };
-
-    customMatchers.toHaveAttr = function (attributeName, expectedAttributeValue) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have attribute '".t(this.isNot ? "not" : "") + attributeName + "' with value " + expectedAttributeValue + ".";
-        };
-        return hlp.hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
-    };
-
-    customMatchers.toHaveProp = function (propertyName, expectedPropertyValue) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have property '".t(this.isNot ? "not" : "") + expectedPropertyValue + "'.";
-        };
-        return hlp.hasProperty(this.actual.prop(propertyName), expectedPropertyValue);
-    };
-
-    customMatchers.toHaveId = function (id) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have id '".t(this.isNot ? "not" : "") + id + "'.";
-        };
-        return this.actual.attr('id') === id;
-    };
-
-    customMatchers.toBeDisabled = function (selector) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be disabled '".t(this.isNot ? "not" : "") + hlp.dp(selector) + "'.";
-        };
-        return this.actual.is(':disabled');
-    };
-
-    customMatchers.toBeFocused = function (selector) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} be focused '".t(this.isNot ? "not" : "") + hlp.dp(selector) + "'.";
-        };
-        return this.actual.is(':focus');
-    };
-
-    customMatchers.toHaveText = function (text) {
-        if (!bjQuery) {
-            return false;
-        }
-
-        this.message = function () {
-            var msg = "";
-            if (bjQuery) {
-                msg = "Expected '" + hlp.dp(this.actual) + "' to {0} have text '".t(this.isNot ? "not" : "") + text + "'.";
-            } else {
-                msg = hlp.msg.jQuery;
-            }
-            return msg;
-        };
-
-        var trimmedText = $.trim(this.actual.text()), result;
-        if (text && angular.isFunction(text.test)) {
-            result = text.test(trimmedText);
-        } else {
-            result = trimmedText === text;
-        }
-        return result;
-    };
-
-    customMatchers.toHaveValue = function (value) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have value '".t(this.isNot ? "not" : "") + value + "'.";
-        };
-        return this.actual.val() === value;
-    };
-
-    customMatchers.toHaveData = function (key, expectedValue) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to {0} have data '" + expectedValue + "'.".t(this.isNot ? "not" : "");
-        };
-        return hlp.hasProperty(this.actual.data(key), expectedValue);
     };
 
     /**
@@ -785,26 +701,6 @@ beforeEach(function () {
             };
         };
         return hlp.evaluate.call(this, test);
-    };
-
-    /**
-     * @return {Boolean}
-     */
-    customMatchers.toBeNonEmptyString = function () {
-        if (!bjQuery) {
-            return false;
-        }
-
-        this.message = function () {
-            var msg = "";
-            if (bjQuery) {
-                msg = "Expected '" + hlp.dp(this.actual) + "' to " + hlp.isNot(this, "") + "be a non empty string ";
-            } else {
-                msg = hlp.msg.jQuery;
-            }
-            return msg;
-        };
-        return hlp.isOfType(this.actual, 'String') && $.trim(this.actual).length > 0;
     };
 
     /**
@@ -905,11 +801,15 @@ beforeEach(function () {
         return hlp.evaluate.call(this, test);
     };
 
-    customMatchers.toContainSelector = function (selector) {
-        this.message = function () {
-            return "Expected '" + hlp.dp(this.actual) + "' to have contain '" + hlp.dp(selector) + "'.";
+    matchers.toContainSelector = function () {
+        return {
+            compare : function (actual, expected) {
+                return {
+                    pass: actual.find(expected).length,
+                    message : "Expected '" + hlp.dp(actual) + "' to have contain '" + hlp.dp(expected) + "'."
+                };
+            }
         };
-        return this.actual.find(selector).length;
     };
 
     matchers.toBeUniqueArray = function () {
