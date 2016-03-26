@@ -21,10 +21,10 @@ module.exports = function (grunt) {
                 reporters: 'dots'
             },
             stable: {
-                configFile: 'config/karma.stable.conf.js'
+                configFile: 'config/karma.legacy.conf.js'
             },
             unstable: {
-                configFile: 'config/karma.unstable.conf.js'
+                configFile: 'config/karma.stable.conf.js'
             }
         },
         yuidoc: {
@@ -42,7 +42,7 @@ module.exports = function (grunt) {
         },
         watch: {
             files: '<%= meta.bin.lintFiles %>',
-            tasks: ['jslint', 'karma:stable', 'yuidoc', 'notify:watch']
+            tasks: ['jslint', 'karma', 'yuidoc', 'notify:watch']
         },
         notify: {
             watch: {
